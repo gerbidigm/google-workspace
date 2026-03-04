@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Warn if upstream/main has commits not in the local history.
+
+git fetch upstream --quiet 2>/dev/null
+
+BEHIND=$(git rev-list --count HEAD..upstream/main 2>/dev/null)
+
+if [ "${BEHIND:-0}" -gt 0 ]; then
+  echo ""
+  echo "⚠  upstream/main is $BEHIND commit(s) ahead of your branch."
+  echo "   Consider rebasing before pushing:"
+  echo "   git sync"
+  echo ""
+  read -r -p "Push anyway? [y/N] " reply < /dev/tty
+  if [[ ! "$reply" =~ ^[Yy]$ ]]; then
+    echo "Push aborted."
+    exit 1
+  fi
+fi
