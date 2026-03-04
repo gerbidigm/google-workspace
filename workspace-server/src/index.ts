@@ -142,6 +142,32 @@ async function main() {
   );
 
   server.registerTool(
+    'docs.getSuggestions',
+    {
+      description: 'Retrieves suggested edits from a Google Doc.',
+      inputSchema: {
+        documentId: z
+          .string()
+          .describe('The ID of the document to retrieve suggestions from.'),
+      },
+    },
+    docsService.getSuggestions,
+  );
+
+  server.registerTool(
+    'docs.getComments',
+    {
+      description: 'Retrieves comments from a Google Doc.',
+      inputSchema: {
+        documentId: z
+          .string()
+          .describe('The ID of the document to retrieve comments from.'),
+      },
+    },
+    docsService.getComments,
+  );
+
+  server.registerTool(
     'docs.create',
     {
       description:
