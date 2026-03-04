@@ -11,9 +11,14 @@ if [ "${BEHIND:-0}" -gt 0 ]; then
   echo "   Consider rebasing before pushing:"
   echo "   git sync"
   echo ""
-  read -r -p "Push anyway? [y/N] " reply < /dev/tty
-  if [[ ! "$reply" =~ ^[Yy]$ ]]; then
-    echo "Push aborted."
+  if [ -t 1 ] && [ -e /dev/tty ]; then
+    read -r -p "Push anyway? [y/N] " reply < /dev/tty
+    if [[ ! "$reply" =~ ^[Yy]$ ]]; then
+      echo "Push aborted."
+      exit 1
+    fi
+  else
+    echo "Push aborted (non-interactive shell)."
     exit 1
   fi
 fi
