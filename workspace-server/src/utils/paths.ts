@@ -6,6 +6,7 @@
 
 import path from 'node:path';
 import * as fs from 'node:fs';
+import * as os from 'node:os';
 
 function findProjectRoot(): string {
   let dir = __dirname;
@@ -15,9 +16,9 @@ function findProjectRoot(): string {
     }
     dir = path.dirname(dir);
   }
-  throw new Error(
-    `Could not find project root containing gemini-extension.json. Traversed up from ${__dirname}.`,
-  );
+  // Not running inside a Gemini CLI extension context (e.g. Claude Desktop).
+  // Use a stable per-user directory for token storage.
+  return path.join(os.homedir(), '.google-workspace-mcp');
 }
 
 // Construct an absolute path to the project root.
