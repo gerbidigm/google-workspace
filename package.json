@@ -34,6 +34,7 @@
   "dependencies": {
     "@google-apps/chat": "^0.23.0",
     "@google-cloud/local-auth": "^3.0.1",
+    "@google/generative-ai": "^0.21.0",
     "@googleapis/docs": "^9.2.1",
     "@googleapis/drive": "^20.1.0",
     "@modelcontextprotocol/sdk": "^1.27.1",
