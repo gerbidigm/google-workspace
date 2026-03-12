@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "google-workspace": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "workspace-server/dist/index.js"
+      ]
+    }
+  }
+}
