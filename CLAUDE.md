@@ -109,3 +109,98 @@ npm install && npm run build
 gemini extensions link .
 gemini --debug
 ```
+
+## Custom Tools (Gerbidigm)
+
+To minimize merge conflicts with upstream, custom tools are isolated in a dedicated
+namespace with a **minimal 3-line patch** to `index.ts`.
+
+### Custom Tools Architecture
+
+```text
+workspace-server/src/
+├── gerbidigm/                          # Custom code (isolated from upstream)
+│   ├── README.md                       # Complete usage guide
+│   ├── INDEX_PATCH.md                  # Patch documentation
+│   ├── register-tools.ts               # Central registration function
+│   └── services/                       # Custom service implementations
+│       └── ExampleCustomService.ts     # Example service
+└── index.ts                            # 3-line patch only
+```
+
+### The Patch
+
+Only **3 lines** in `index.ts` (before `server.connect()`):
+
+```typescript
+// GERBIDIGM PATCH: Register custom tools
+const { registerGerbidigmTools } = await import('./gerbidigm/register-tools.js');
+await registerGerbidigmTools(server, authManager, { separator, readOnlyToolProps }, { peopleService });
+```
+
+The services object passes upstream service instances for creating wrapper tools.
+
+### Adding New Custom Tools
+
+1. Create a service in `workspace-server/src/gerbidigm/services/`:
+
+   ```typescript
+   export class MyCustomService {
+     constructor(private authManager: AuthManager) {}
+     public myTool = async (params) => { /* implementation */ };
+   }
+   ```
+
+2. Register in `workspace-server/src/gerbidigm/register-tools.ts`:
+
+   ```typescript
+   const myService = new MyCustomService(authManager);
+   server.registerTool(`gerbidigm${separator}myTool`, {...}, myService.myTool);
+   ```
+
+3. Build: `npm run build`
+
+All custom tools use the `gerbidigm` prefix (e.g., `gerbidigm_echo`,
+`gerbidigm.myTool`) to avoid naming conflicts with upstream tools.
+
+**Note:** Custom tool files must use the standard Apache 2.0 license header
+(`Copyright 2025 Google LLC`) enforced by ESLint.
+
+### Wrapper Tools Pattern
+
+Custom tools can **wrap** existing upstream tools to improve discoverability:
+
+```typescript
+// Example: searchDirectory wraps people.getUserProfile
+if (services?.peopleService) {
+  server.registerTool(
+    `gerbidigm${separator}searchDirectory`,
+    {
+      description: 'Search the Google Workspace directory for users by name...',
+      inputSchema: { query: z.string() }
+    },
+    async ({ query }) => services.peopleService!.getUserProfile({ name: query })
+  );
+}
+```
+
+**When to create wrappers:**
+
+- Upstream tool has hidden/unclear capabilities
+- Generic tool name doesn't indicate specific use case
+- Simplify complex multi-parameter tools for common scenarios
+- Improve AI agent tool selection with targeted descriptions
+
+**Benefits:**
+
+- Zero code duplication (reuses upstream implementation)
+- Better tool discovery for AI agents
+- No upstream patches needed
+
+### Benefits
+
+- **Minimal conflicts**: Only 3 lines to maintain during upstream merges
+- **Complete isolation**: All custom code in `gerbidigm/` namespace
+- **Clear markers**: `GERBIDIGM PATCH START/END` comments in `index.ts`
+- **Easy testing**: Custom tools can be tested independently
+- **Wrapper support**: Can enhance upstream tools without modifying them
