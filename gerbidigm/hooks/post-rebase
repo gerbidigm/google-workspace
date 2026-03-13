@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Apply gerbidigm patches to upstream-owned files after every rebase.
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+bash "$REPO_ROOT/gerbidigm/apply-patches.sh"
