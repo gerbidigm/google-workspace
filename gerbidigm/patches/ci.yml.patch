@@ -1,0 +1,20 @@
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index cf93a34..ab203cd 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -33,6 +33,7 @@ jobs:
+ 
+   test:
+     needs: verify
++    if: github.event_name == 'push'
+     runs-on: ${{ matrix.os }}
+ 
+     strategy:
+@@ -71,6 +72,7 @@ jobs:
+   build:
+     runs-on: ubuntu-latest
+     needs: test
++    if: github.event_name == 'push'
+ 
+     steps:
+       - uses: actions/checkout@v6
