@@ -89,23 +89,31 @@ Expected output:
 
 ### Step 4: Install the Plugin
 
+Claude Code requires a marketplace to install local plugins. Register this repo as a
+local marketplace, then install from it:
+
 ```bash
-claude plugins install ./claude-plugin
+# From the workspace root directory:
+claude plugin marketplace add .
+claude plugin install google-workspace-gerbidigm@gerbidigm
 ```
 
 Expected output:
 ```
-✓ Installed google-workspace-gerbidigm@0.1.0
+Adding marketplace...
+✔ Successfully added marketplace: gerbidigm (declared in user settings)
+Installing plugin "google-workspace-gerbidigm@gerbidigm"...
+✔ Successfully installed plugin: google-workspace-gerbidigm@gerbidigm (scope: user)
 ```
 
 **Verify installation:**
 ```bash
-claude plugins list
+claude plugin list
 ```
 
 Should show:
 ```
-google-workspace-gerbidigm  v0.1.0
+google-workspace-gerbidigm@gerbidigm  v0.1.0  enabled
 ```
 
 ### Step 5: Test the Installation
@@ -195,31 +203,33 @@ The login script will display a URL you can open in any browser (phone, local ma
 
 ### Issue: Plugin install fails
 
-**Error:** "Invalid plugin directory"
+**Error:** "Plugin not found in any configured marketplace"
 
-**Solution:**
+`claude plugins install ./path` does not work for local plugins. You must register a
+marketplace first:
+
 ```bash
-# Ensure you're in the workspace directory
-cd /path/to/workspace
-
-# Build first
-npm run build
-
-# Then install
-claude plugins install ./claude-plugin
+# From the workspace root directory
+claude plugin marketplace add .
+claude plugin install google-workspace-gerbidigm@gerbidigm
 ```
+
+**Error:** "Marketplace file not found"
+
+The `.claude-plugin/marketplace.json` file is missing. Ensure you have the latest version
+of the repo (it should be present at `.claude-plugin/marketplace.json`).
 
 ### Issue: Server not connecting
 
 **Check plugin configuration:**
 ```bash
-claude plugins get google-workspace-gerbidigm
+claude plugin get google-workspace-gerbidigm@gerbidigm
 ```
 
 **Reinstall plugin:**
 ```bash
-claude plugins remove google-workspace-gerbidigm
-claude plugins install ./claude-plugin
+claude plugin uninstall google-workspace-gerbidigm@gerbidigm
+claude plugin install google-workspace-gerbidigm@gerbidigm
 ```
 
 **Check server manually:**
@@ -241,8 +251,8 @@ npm run build
 
 # Update version in plugin.json (if needed)
 # Then reinstall
-claude plugins remove google-workspace-gerbidigm
-claude plugins install ./claude-plugin
+claude plugin uninstall google-workspace-gerbidigm@gerbidigm
+claude plugin install google-workspace-gerbidigm@gerbidigm
 ```
 
 ### Enable Debug Mode
@@ -272,20 +282,21 @@ You can install the plugin in different ways for different use cases:
 claude --plugin-dir ./claude-plugin
 ```
 
-**Personal (installed):**
+**Personal (installed, user-scoped):**
 ```bash
-claude plugins install ./claude-plugin
+claude plugin marketplace add .
+claude plugin install google-workspace-gerbidigm@gerbidigm
 ```
 
 **Team (git clone + install):**
-Team members clone the repo and install individually.
+Team members clone the repo and run the same two commands above.
 
 ## Uninstallation
 
 To remove the plugin:
 
 ```bash
-claude plugins remove google-workspace-gerbidigm
+claude plugin uninstall google-workspace-gerbidigm@gerbidigm
 ```
 
 To also clear authentication:
@@ -306,7 +317,7 @@ After successful installation:
 
 - **Verification**: Run `node scripts/verify-tools.js`
 - **Auth status**: Run `node scripts/auth-utils.js status`
-- **Plugin info**: Run `claude plugins get google-workspace-gerbidigm`
+- **Plugin info**: Run `claude plugin get google-workspace-gerbidigm@gerbidigm`
 - **Issues**: https://github.com/gerbidigm/workspace/issues
 
 ## System Requirements
