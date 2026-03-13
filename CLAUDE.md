@@ -1,12 +1,13 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with
+code in this repository.
 
 ## Project Overview
 
-Google Workspace MCP (Model Context Protocol) server that integrates Google Docs, Sheets,
-Slides, Drive, Calendar, Gmail, Chat, and People into the Gemini CLI. The server exposes
-~100+ tools via the MCP protocol over stdio.
+Google Workspace MCP (Model Context Protocol) server that integrates Google
+Docs, Sheets, Slides, Drive, Calendar, Gmail, Chat, and People into the Gemini
+CLI. The server exposes ~100+ tools via the MCP protocol over stdio.
 
 ## Commands
 
@@ -39,7 +40,8 @@ npm run test && npm run lint
 npx tsc --noEmit --project workspace-server
 ```
 
-**Node.js version:** Use `~20.19.0` for development (upstream dev dependency constraint).
+**Node.js version:** Use `~20.19.0` for development (upstream dev dependency
+constraint).
 
 ## Architecture
 
@@ -47,11 +49,11 @@ The main entry point is `workspace-server/src/index.ts`, which:
 
 1. Initializes `AuthManager` with all required OAuth scopes
 2. Instantiates each service class (`DocsService`, `DriveService`, etc.)
-3. Calls `server.registerTool()` for each tool, with a Zod input schema and a handler
-   bound to a service method
-4. By default, normalizes tool names from dot notation (`docs.create`) to underscores
-   (`docs_create`); the `--use-dot-names` flag preserves dots (used when running as a
-   Gemini CLI extension)
+3. Calls `server.registerTool()` for each tool, with a Zod input schema and a
+   handler bound to a service method
+4. By default, normalizes tool names from dot notation (`docs.create`) to
+   underscores (`docs_create`); the `--use-dot-names` flag preserves dots (used
+   when running as a Gemini CLI extension)
 
 **Layers:**
 
@@ -62,8 +64,8 @@ index.ts (MCP server + tool registration)
     └── utils/ (logging, validation, query builders, MIME helpers)
 ```
 
-Each service is a class that takes `AuthManager` as a constructor dependency and exposes
-async methods that are directly wired to tools in `index.ts`.
+Each service is a class that takes `AuthManager` as a constructor dependency and
+exposes async methods that are directly wired to tools in `index.ts`.
 
 ## Adding a New Tool
 
@@ -77,14 +79,14 @@ async methods that are directly wired to tools in `index.ts`.
 
 ## Key Conventions
 
-- **License headers:** All source files require an Apache 2.0 SPDX header. ESLint enforces
-  the exact format with years `2025`–`2026`.
-- **Imports:** Use `node:` protocol for built-in modules (ESLint enforced). No relative
-  imports across packages.
-- **Tool names:** Source uses dot notation; runtime normalizes to underscores unless
-  `--use-dot-names` is passed.
-- **Test location:** `workspace-server/src/__tests__/`; coverage thresholds are 45%
-  branches / 65% functions / 60% lines.
+- **License headers:** All source files require an Apache 2.0 SPDX header.
+  ESLint enforces the exact format with years `2025`–`2026`.
+- **Imports:** Use `node:` protocol for built-in modules (ESLint enforced). No
+  relative imports across packages.
+- **Tool names:** Source uses dot notation; runtime normalizes to underscores
+  unless `--use-dot-names` is passed.
+- **Test location:** `workspace-server/src/__tests__/`; coverage thresholds are
+  45% branches / 65% functions / 60% lines.
 - **Module alias:** `@/` resolves to `workspace-server/src/` in Jest.
 
 ## Authentication
@@ -96,8 +98,8 @@ node scripts/auth-utils.js expire   # Force token expiration (testing)
 node scripts/auth-utils.js status   # Show auth status
 ```
 
-In headless environments (SSH/WSL/Cloud Shell), `login` reads credentials from `/dev/tty`
-so they are never exposed to the AI model that spawned the process.
+In headless environments (SSH/WSL/Cloud Shell), `login` reads credentials from
+`/dev/tty` so they are never exposed to the AI model that spawned the process.
 
 ## Testing with Gemini CLI
 

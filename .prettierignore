@@ -4,3 +4,4 @@ coverage
 .vitepress/cache
 .vitepress/dist
 package-lock.json
+.claude/

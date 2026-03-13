@@ -1,0 +1,62 @@
+# Copyright 2025 Google LLC
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: Upstream Sync Check
+
+# Enforce that upstream/main is always an ancestor of origin/main.
+# Blocks PRs and direct pushes to main if upstream has drifted ahead.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  upstream-ancestry:
+    name: upstream/main is ancestor of main
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Add upstream remote
+        run: git remote add upstream https://github.com/gemini-cli-extensions/workspace.git
+
+      - name: Fetch upstream/main
+        run: git fetch upstream main --quiet
+
+      - name: Check upstream/main is an ancestor of main
+        run: |
+          UPSTREAM_SHA=$(git rev-parse upstream/main)
+          TARGET_SHA=${{ github.event_name == 'pull_request' && 'github.event.pull_request.base.sha' || 'github.sha' }}
+
+          # For pull_request events, check that the PR base (origin/main) contains upstream.
+          # For push events, check the commit being pushed.
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            CHECK_SHA="${{ github.event.pull_request.base.sha }}"
+            CONTEXT="origin/main (PR base)"
+          else
+            CHECK_SHA="${{ github.sha }}"
+            CONTEXT="the pushed commit"
+          fi
+
+          if git merge-base --is-ancestor "$UPSTREAM_SHA" "$CHECK_SHA"; then
+            echo "✔  upstream/main is an ancestor of $CONTEXT."
+          else
+            BEHIND=$(git rev-list --count "$CHECK_SHA"..upstream/main)
+            echo ""
+            echo "✘  upstream/main is NOT an ancestor of $CONTEXT."
+            echo "   upstream/main is $BEHIND commit(s) ahead."
+            echo ""
+            echo "   Sync origin/main with upstream before merging:"
+            echo "     git fetch upstream"
+            echo "     git checkout main"
+            echo "     git rebase upstream/main"
+            echo "     git push origin main"
+            echo ""
+            exit 1
+          fi
