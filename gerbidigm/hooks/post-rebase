@@ -1,5 +1,16 @@
 #!/usr/bin/env bash
-# Apply gerbidigm patches to upstream-owned files after every rebase.
+# Post-rebase hook: apply gerbidigm patches and regenerate package-lock.json.
+
+set -euo pipefail
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
+
+# Re-apply patches to upstream-owned files (e.g. ci.yml).
 bash "$REPO_ROOT/gerbidigm/apply-patches.sh"
+
+# Regenerate package-lock.json from package.json. This picks up any
+# gerbidigm dependency additions that were displaced when the merge driver
+# accepted upstream's lockfile during the rebase.
+echo "Regenerating package-lock.json..."
+npm install --package-lock-only --silent --prefix "$REPO_ROOT"
+echo "✔  package-lock.json regenerated"
