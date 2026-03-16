@@ -57,6 +57,21 @@ type ContentBlock =
   | SectionBreakBlock
   | TableOfContentsBlock;
 
+interface TextMatch {
+  startIndex: number;
+  endIndex: number;
+  /** Surrounding text for confirmation — ~30 chars before/after the match. */
+  context: string;
+  tabId?: string;
+  tabTitle?: string;
+}
+
+interface IndexRange {
+  startIndex: number;
+  endIndex: number;
+  tabId?: string;
+}
+
 /**
  * Service for structural read and edit operations on Google Docs.
  * Exposes index-aware document structure for precision edits like
@@ -212,6 +227,192 @@ export class DocsEditService {
   };
 
   /**
+   * Recursively collect all paragraphs from structural elements,
+   * including those inside table cells. Returns each paragraph's
+   * elements alongside the tabId it belongs to.
+   */
+  private _collectParagraphs(
+    elements: docs_v1.Schema$StructuralElement[],
+    tabId: string | undefined,
+    tabTitle: string | undefined,
+  ): Array<{
+    elements: docs_v1.Schema$ParagraphElement[];
+    tabId: string | undefined;
+    tabTitle: string | undefined;
+  }> {
+    const out: Array<{
+      elements: docs_v1.Schema$ParagraphElement[];
+      tabId: string | undefined;
+      tabTitle: string | undefined;
+    }> = [];
+
+    for (const el of elements) {
+      if (el.paragraph?.elements) {
+        out.push({ elements: el.paragraph.elements, tabId, tabTitle });
+      } else if (el.table) {
+        for (const row of el.table.tableRows ?? []) {
+          for (const cell of row.tableCells ?? []) {
+            out.push(
+              ...this._collectParagraphs(cell.content ?? [], tabId, tabTitle),
+            );
+          }
+        }
+      }
+    }
+
+    return out;
+  }
+
+  /**
+   * Find all occurrences of a search string within a document and return
+   * their absolute start/end indices, sorted descending (end-of-document
+   * first) so they can be safely passed to deleteRanges without index
+   * adjustment.
+   */
+  public findTextRange = async ({
+    documentId,
+    text,
+    tabId,
+    caseSensitive = false,
+  }: {
+    documentId: string;
+    text: string;
+    tabId?: string;
+    caseSensitive?: boolean;
+  }) => {
+    logToFile(
+      `[DocsEditService] findTextRange "${text}" in document: ${documentId}`,
+    );
+    try {
+      if (!text) {
+        throw new Error('text must not be empty');
+      }
+
+      const id = extractDocId(documentId) || documentId;
+      const docs = await this.getDocsClient();
+      const res = await docs.documents.get({
+        documentId: id,
+        fields: 'documentId,title,tabs',
+        includeTabsContent: true,
+      });
+
+      const allTabs = this._flattenTabs(res.data.tabs ?? []);
+      const tabsToSearch = tabId
+        ? allTabs.filter((t) => t.tabProperties?.tabId === tabId)
+        : allTabs;
+
+      if (tabId && tabsToSearch.length === 0) {
+        throw new Error(`Tab with ID ${tabId} not found.`);
+      }
+
+      const needle = caseSensitive ? text : text.toLowerCase();
+      const matches: TextMatch[] = [];
+
+      for (const tab of tabsToSearch) {
+        const tId = tab.tabProperties?.tabId ?? undefined;
+        const tTitle = tab.tabProperties?.title ?? undefined;
+        const paragraphs = this._collectParagraphs(
+          tab.documentTab?.body?.content ?? [],
+          tId,
+          tTitle,
+        );
+
+        for (const para of paragraphs) {
+          // Build a run map: for each run, track its char-offset within
+          // the concatenated paragraph text and its absolute doc start.
+          const runMap: Array<{ charStart: number; absStart: number }> = [];
+          let paraText = '';
+
+          for (const run of para.elements) {
+            if (run.startIndex == null) continue;
+            runMap.push({
+              charStart: paraText.length,
+              absStart: run.startIndex,
+            });
+            paraText += run.textRun?.content ?? '';
+          }
+
+          if (!paraText) continue;
+
+          const haystack = caseSensitive ? paraText : paraText.toLowerCase();
+          let pos = 0;
+
+          while ((pos = haystack.indexOf(needle, pos)) !== -1) {
+            // Map char offset within paragraph → absolute doc index
+            let absStart = 0;
+            for (let i = runMap.length - 1; i >= 0; i--) {
+              if (runMap[i].charStart <= pos) {
+                absStart = runMap[i].absStart + (pos - runMap[i].charStart);
+                break;
+              }
+            }
+
+            const absEnd = absStart + text.length;
+
+            // Build context snippet (~30 chars either side)
+            const ctxBefore = paraText.slice(Math.max(0, pos - 30), pos);
+            const ctxAfter = paraText.slice(
+              pos + text.length,
+              pos + text.length + 30,
+            );
+            const context = `…${ctxBefore}[${paraText.slice(pos, pos + text.length)}]${ctxAfter}…`;
+
+            matches.push({
+              startIndex: absStart,
+              endIndex: absEnd,
+              context,
+              tabId: tId,
+              tabTitle: tTitle,
+            });
+
+            pos += text.length; // non-overlapping
+          }
+        }
+      }
+
+      // Sort descending: process from end of document so indices stay valid
+      matches.sort((a, b) => b.startIndex - a.startIndex);
+
+      logToFile(
+        `[DocsEditService] findTextRange found ${matches.length} match(es)`,
+      );
+
+      return {
+        content: [
+          {
+            type: 'text' as const,
+            text: JSON.stringify(
+              {
+                count: matches.length,
+                note:
+                  matches.length > 1
+                    ? 'Matches are sorted end-of-document first. Pass the full matches array to deleteRanges to delete all occurrences safely.'
+                    : undefined,
+                matches,
+              },
+              null,
+              2,
+            ),
+          },
+        ],
+      };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      logToFile(`[DocsEditService] Error in findTextRange: ${errorMessage}`);
+      return {
+        isError: true,
+        content: [
+          {
+            type: 'text' as const,
+            text: JSON.stringify({ error: errorMessage }),
+          },
+        ],
+      };
+    }
+  };
+
+  /**
    * Delete a range of content from a Google Doc by start and end index.
    * Indices come from getStructure. The range is [startIndex, endIndex) —
    * endIndex is exclusive.
@@ -278,6 +479,103 @@ export class DocsEditService {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       logToFile(`[DocsEditService] Error in deleteRange: ${errorMessage}`);
+      return {
+        isError: true,
+        content: [
+          {
+            type: 'text' as const,
+            text: JSON.stringify({ error: errorMessage }),
+          },
+        ],
+      };
+    }
+  };
+
+  /**
+   * Delete multiple content ranges from a Google Doc in a single operation.
+   * Ranges are sorted end-of-document first internally, so indices from a
+   * prior findTextRange call can be passed directly without adjustment.
+   * Overlapping ranges are rejected.
+   */
+  public deleteRanges = async ({
+    documentId,
+    ranges,
+  }: {
+    documentId: string;
+    ranges: IndexRange[];
+  }) => {
+    logToFile(
+      `[DocsEditService] deleteRanges ${ranges.length} range(s) in document: ${documentId}`,
+    );
+    try {
+      if (ranges.length === 0) {
+        throw new Error('ranges must not be empty');
+      }
+
+      // Validate individual ranges
+      for (const r of ranges) {
+        if (r.startIndex < 1) {
+          throw new Error(`startIndex ${r.startIndex} must be >= 1`);
+        }
+        if (r.endIndex <= r.startIndex) {
+          throw new Error(
+            `endIndex ${r.endIndex} must be > startIndex ${r.startIndex}`,
+          );
+        }
+      }
+
+      // Sort descending so later deletions don't shift earlier indices
+      const sorted = [...ranges].sort((a, b) => b.startIndex - a.startIndex);
+
+      // Detect overlaps after sorting
+      for (let i = 0; i < sorted.length - 1; i++) {
+        if (sorted[i + 1].endIndex > sorted[i].startIndex) {
+          throw new Error(
+            `Ranges [${sorted[i + 1].startIndex}, ${sorted[i + 1].endIndex}) and ` +
+              `[${sorted[i].startIndex}, ${sorted[i].endIndex}) overlap. ` +
+              `Resolve overlaps before calling deleteRanges.`,
+          );
+        }
+      }
+
+      const id = extractDocId(documentId) || documentId;
+      const docs = await this.getDocsClient();
+
+      await docs.documents.batchUpdate({
+        documentId: id,
+        requestBody: {
+          requests: sorted.map((r) => ({
+            deleteContentRange: {
+              range: {
+                startIndex: r.startIndex,
+                endIndex: r.endIndex,
+                ...(r.tabId && { tabId: r.tabId }),
+              },
+            },
+          })),
+        },
+      });
+
+      logToFile(
+        `[DocsEditService] deleteRanges succeeded: ${sorted.length} range(s) deleted`,
+      );
+
+      return {
+        content: [
+          {
+            type: 'text' as const,
+            text: JSON.stringify({
+              success: true,
+              deletedCount: sorted.length,
+              deletedRanges: sorted,
+            }),
+          },
+        ],
+      };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      logToFile(`[DocsEditService] Error in deleteRanges: ${errorMessage}`);
       return {
         isError: true,
         content: [

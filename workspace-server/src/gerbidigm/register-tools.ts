@@ -472,9 +472,58 @@ export async function registerGerbidigmTools(
     docsEditService.deleteRange,
   );
 
+  server.registerTool(
+    `gerbidigm${separator}docs${separator}findTextRange`,
+    {
+      description:
+        'Find all occurrences of a text string in a Google Doc and return their absolute start/end indices. Results are sorted end-of-document first so indices stay valid if you delete them in order. Use this to locate content before calling deleteRange (single match) or deleteRanges (all matches). Includes a context snippet around each match for confirmation.',
+      inputSchema: {
+        documentId: z.string().describe('The Google Doc ID or URL to search.'),
+        text: z.string().describe('The exact text to search for.'),
+        tabId: z
+          .string()
+          .optional()
+          .describe('Optional tab ID to restrict search to a specific tab.'),
+        caseSensitive: z
+          .boolean()
+          .optional()
+          .default(false)
+          .describe('Whether the search is case-sensitive. Defaults to false.'),
+      },
+      ...readOnlyToolProps,
+    },
+    docsEditService.findTextRange,
+  );
+
+  server.registerTool(
+    `gerbidigm${separator}docs${separator}deleteRanges`,
+    {
+      description:
+        'Delete multiple content ranges from a Google Doc in a single operation. Pass the matches array from docs.findTextRange directly — ranges are sorted end-of-document first internally so no index adjustment is needed. Overlapping ranges are rejected with an error. Prefer this over calling deleteRange in a loop.',
+      inputSchema: {
+        documentId: z
+          .string()
+          .describe('The Google Doc ID or URL to delete content from.'),
+        ranges: z
+          .array(
+            z.object({
+              startIndex: z.number().int().min(1),
+              endIndex: z.number().int(),
+              tabId: z.string().optional(),
+            }),
+          )
+          .min(1)
+          .describe(
+            'Array of ranges to delete. Each range is [startIndex, endIndex). Obtain from docs.findTextRange or docs.getStructure.',
+          ),
+      },
+    },
+    docsEditService.deleteRanges,
+  );
+
   // Add more tool registrations here as you build them
   // server.registerTool(`gerbidigm${separator}yourTool`, {...}, yourService.yourMethod);
 
-  const toolCount = 12 + (services?.peopleService ? 1 : 0);
+  const toolCount = 14 + (services?.peopleService ? 1 : 0);
   console.error(`Registered ${toolCount} Gerbidigm custom tools.`);
 }
