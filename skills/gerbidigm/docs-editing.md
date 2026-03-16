@@ -167,6 +167,31 @@ Delete a single content range. Use this when you have a specific index from
 > fails with _"Insert text requests must specify text to insert."_ Use
 > `deleteRange` or `deleteRanges` instead.
 
+#### Anchor warning: when deleting a full paragraph fails
+
+The Docs API rejects a delete if the `endIndex` equals the `startIndex` of a
+paragraph that has `hasLeadingAnchor: true` in `getStructure` output. This flag
+means a bookmark or named-range anchor is positioned at the start of that
+paragraph. Merging the preceding paragraph into it (by deleting the `\n`
+terminator) is blocked.
+
+**Workaround:** use `endIndex - 1` to clear the paragraph's text content without
+touching the `\n`. This leaves an empty line, but avoids the error.
+
+```
+# Paragraph to delete: startIndex: 100, endIndex: 134
+# Next paragraph has hasLeadingAnchor: true
+
+# This FAILS (tries to merge across the anchor):
+deleteRange(startIndex: 100, endIndex: 134)
+
+# This WORKS (clears content, leaves empty line):
+deleteRange(startIndex: 100, endIndex: 133)
+```
+
+The `hasLeadingAnchor` flag is only present when true — its absence means the
+full-paragraph delete (including `\n`) is safe.
+
 ---
 
 ### `docs.getStructure`

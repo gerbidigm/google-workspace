@@ -507,7 +507,7 @@ export async function registerGerbidigmTools(
     `gerbidigm${separator}docs${separator}deleteRange`,
     {
       description:
-        "Delete a range of content from a Google Doc using start and end indices. The range is [startIndex, endIndex) — endIndex is exclusive. Get indices first by calling docs.getStructure. To delete an entire paragraph including its trailing newline, use that paragraph's startIndex and endIndex directly. Do NOT use docs.replaceText with an empty string — use this tool instead.",
+        "Delete a range of content from a Google Doc using start and end indices. The range is [startIndex, endIndex) — endIndex is exclusive. ANCHOR WARNING: If the paragraph immediately after your target has hasLeadingAnchor:true (visible in getStructure output), deleting that paragraph's preceding \\n terminator will be rejected by the API — use endIndex-1 to clear the text content only and leave the empty paragraph. For paragraphs without an anchored successor, use the full startIndex and endIndex to delete the entire paragraph. Do NOT use docs.replaceText with an empty string — use this tool instead.",
       inputSchema: {
         documentId: z
           .string()

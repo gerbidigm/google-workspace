@@ -22,6 +22,15 @@ interface ParagraphBlock {
   endIndex: number;
   text: string;
   namedStyleType?: string;
+  /**
+   * True when the paragraph begins with a zero-length text run, which
+   * indicates a bookmark or named-range anchor is positioned at its start.
+   * When true, deleting the \n terminator of the *preceding* paragraph
+   * (i.e. a range whose endIndex equals this paragraph's startIndex) will
+   * be rejected by the Docs API. Delete up to endIndex-1 instead to clear
+   * the content without merging paragraphs.
+   */
+  hasLeadingAnchor?: boolean;
   runs?: TextRun[];
 }
 
@@ -143,12 +152,23 @@ export class DocsEditService {
             text: this._paragraphElementText(r),
           }));
 
+        // A zero-length run at the very start of a paragraph indicates a
+        // bookmark or named-range anchor. The Docs API will reject any delete
+        // whose endIndex equals this paragraph's startIndex (i.e. merging the
+        // preceding paragraph into this one).
+        const firstRun = runs[0];
+        const hasLeadingAnchor =
+          firstRun != null &&
+          firstRun.startIndex === startIndex &&
+          firstRun.text === '';
+
         const block: ParagraphBlock = {
           type: 'paragraph',
           startIndex,
           endIndex,
           text: runs.map((r) => r.text).join(''),
           namedStyleType,
+          ...(hasLeadingAnchor && { hasLeadingAnchor: true }),
         };
         if (opts.includeRuns) {
           block.runs = runs;
