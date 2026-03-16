@@ -93,6 +93,25 @@ screenshots into existing docs.
 
 **Prerequisites:** Google Workspace authentication (no Gemini API key needed)
 
+### `docs-editing.md`
+
+Precision editing of Google Docs content using index-based tools:
+
+- `gerbidigm_docs_getStructure` - Document structure with start/end indices for
+  every element
+- `gerbidigm_docs_findTextRange` - Locate text by content, returns indices ready
+  for deletion
+- `gerbidigm_docs_deleteRange` - Delete a single content range by index
+- `gerbidigm_docs_deleteRanges` - Delete multiple ranges in one operation
+
+Covers the standard delete-by-content workflow (`findTextRange` →
+`deleteRanges`), structural editing via `getStructure`, multi-edit index safety,
+and why `docs.replaceText("")` fails and what to use instead.
+
+**Use this skill when:** Deleting content from a document, removing all
+occurrences of a phrase, or making any structural edit where you need to address
+content by position.
+
 ## Using Skills with Claude Code
 
 Skills can be loaded during a conversation to provide context-specific guidance.
