@@ -13,6 +13,7 @@ import { FlexibleGmailService } from './services/FlexibleGmailService';
 import { DocsImageService } from './services/DocsImageService';
 import { GeminiService } from './services/GeminiService';
 import { DriveUploadService } from './services/DriveUploadService';
+import { DocsEditService } from './services/DocsEditService';
 
 /**
  * Registration options passed from main index.ts
@@ -60,6 +61,7 @@ export async function registerGerbidigmTools(
   const docsImageService = new DocsImageService(authManager);
   const geminiService = new GeminiService();
   const driveUploadService = new DriveUploadService(authManager);
+  const docsEditService = new DocsEditService(authManager);
 
   // Register custom tools with a 'gerbidigm' prefix to avoid conflicts
   // Tool names will be normalized to 'gerbidigm_echo' or 'gerbidigm.echo'
@@ -413,9 +415,66 @@ export async function registerGerbidigmTools(
     docsImageService.createWithImages,
   );
 
+  // Docs structural read + edit tools
+  server.registerTool(
+    `gerbidigm${separator}docs${separator}getStructure`,
+    {
+      description:
+        'Get the full structure of a Google Doc with start/end indices for every element (paragraphs, tables, section breaks). Use this BEFORE any index-based edit — especially deleteRange — to identify the exact indices of the content you want to modify. Returns tabs, each containing a flat list of content blocks with their text and index ranges.',
+      inputSchema: {
+        documentId: z
+          .string()
+          .describe(
+            'The Google Doc ID or URL. Can be a full URL or just the document ID.',
+          ),
+        tabId: z
+          .string()
+          .optional()
+          .describe(
+            'Optional tab ID to limit results to a single tab. If omitted, all tabs are returned.',
+          ),
+      },
+      ...readOnlyToolProps,
+    },
+    docsEditService.getStructure,
+  );
+
+  server.registerTool(
+    `gerbidigm${separator}docs${separator}deleteRange`,
+    {
+      description:
+        "Delete a range of content from a Google Doc using start and end indices. The range is [startIndex, endIndex) — endIndex is exclusive. Get indices first by calling docs.getStructure. To delete an entire paragraph including its trailing newline, use that paragraph's startIndex and endIndex directly. Do NOT use docs.replaceText with an empty string — use this tool instead.",
+      inputSchema: {
+        documentId: z
+          .string()
+          .describe('The Google Doc ID or URL to delete content from.'),
+        startIndex: z
+          .number()
+          .int()
+          .min(1)
+          .describe(
+            'Start index of the range to delete (inclusive, >= 1). Obtain from docs.getStructure.',
+          ),
+        endIndex: z
+          .number()
+          .int()
+          .describe(
+            'End index of the range to delete (exclusive, > startIndex). Obtain from docs.getStructure.',
+          ),
+        tabId: z
+          .string()
+          .optional()
+          .describe(
+            'Optional tab ID if targeting a specific tab in a multi-tab document.',
+          ),
+      },
+    },
+    docsEditService.deleteRange,
+  );
+
   // Add more tool registrations here as you build them
   // server.registerTool(`gerbidigm${separator}yourTool`, {...}, yourService.yourMethod);
 
-  const toolCount = 10 + (services?.peopleService ? 1 : 0);
+  const toolCount = 12 + (services?.peopleService ? 1 : 0);
   console.error(`Registered ${toolCount} Gerbidigm custom tools.`);
 }
