@@ -379,7 +379,7 @@ export async function registerGerbidigmTools(
         title: z.string().describe('The title for the new Google Doc.'),
         content: z
           .array(
-            z.discriminatedUnion('type', [
+            z.union([
               z.object({
                 type: z.literal('text'),
                 text: z.string().describe('Text content to insert.'),

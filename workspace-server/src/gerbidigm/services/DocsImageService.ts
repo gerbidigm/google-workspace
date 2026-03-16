@@ -132,17 +132,17 @@ export class DocsImageService {
                     .layout,
                 leftOffset:
                   positionedObject.positionedObjectProperties.positioning
-                    .leftOffset?.magnitude,
+                    .leftOffset?.magnitude ?? undefined,
                 topOffset:
                   positionedObject.positionedObjectProperties.positioning
-                    .topOffset?.magnitude,
+                    .topOffset?.magnitude ?? undefined,
               }
             : undefined;
 
           images.push({
             objectId,
             contentUri,
-            mimeType: embeddedObject.imageProperties.contentUri
+            mimeType: embeddedObject.imageProperties?.contentUri
               ? this._inferMimeType(embeddedObject.imageProperties.contentUri)
               : undefined,
             imageProperties: embeddedObject.imageProperties,
@@ -344,8 +344,13 @@ export class DocsImageService {
     title: string;
     content: Array<
       | { type: 'text'; text: string }
-      | { type: 'image'; uri: string; width?: number; height?: number }
-      | { type: 'image'; driveFileId: string; width?: number; height?: number }
+      | {
+          type: 'image';
+          uri?: string;
+          driveFileId?: string;
+          width?: number;
+          height?: number;
+        }
     >;
   }) => {
     logToFile(
@@ -382,9 +387,9 @@ export class DocsImageService {
         } else if (item.type === 'image') {
           // Determine URI
           let uri: string;
-          if ('uri' in item) {
+          if (item.uri) {
             uri = item.uri;
-          } else if ('driveFileId' in item) {
+          } else if (item.driveFileId) {
             uri = `https://drive.google.com/uc?id=${item.driveFileId}`;
           } else {
             throw new Error('Image must have either uri or driveFileId');
