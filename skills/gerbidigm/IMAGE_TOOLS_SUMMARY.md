@@ -1,6 +1,9 @@
-# Image Extraction & Analysis Tools - Summary
+# Image Tools - Complete Summary
 
-This document summarizes the new Gerbidigm tools for extracting and analyzing images from Google Docs using Gemini AI.
+This document summarizes the Gerbidigm tools for working with images in Google Docs:
+
+- **Extraction & Analysis** - Extract images and analyze with Gemini AI
+- **Insertion & Creation** - Upload images and create docs with embedded images
 
 ## What Was Added
 
@@ -17,30 +20,44 @@ This document summarizes the new Gerbidigm tools for extracting and analyzing im
    - Provides single and batch analysis capabilities
    - Handles fetch, conversion, and API communication
 
-### New Tools (8 total Gerbidigm tools)
+### All Gerbidigm Tools (11 total)
 
 | Tool Name | Description | Prerequisites |
 |-----------|-------------|---------------|
+| **Image Extraction & Analysis** | | |
 | `gerbidigm.docs.extractImages` | Extract all images from a Google Doc with metadata | Google Workspace auth |
 | `gerbidigm.gemini.describeImage` | Analyze a single image with Gemini AI | GEMINI_API_KEY |
 | `gerbidigm.gemini.describeImageBatch` | Batch analyze up to 50 images efficiently | GEMINI_API_KEY |
+| **Image Insertion & Creation** | | |
+| `gerbidigm.drive.uploadImage` | Upload local images to Google Drive (PNG, JPEG, GIF, SVG) | Google Workspace auth |
+| `gerbidigm.docs.insertImage` | Insert images into existing Google Docs | Google Workspace auth |
+| `gerbidigm.docs.createWithImages` | Create new docs with mixed text/image content | Google Workspace auth |
+| **Other Tools** | | |
 | `gerbidigm.gmail.fetchFlexible` | Flexible Gmail message fetching | Google Workspace auth |
 | `gerbidigm.gmail.batchFetchFlexible` | Batch Gmail fetching | Google Workspace auth |
 | `gerbidigm.searchDirectory` | Search Workspace directory | Google Workspace auth |
 | `gerbidigm.echo` | Example custom tool | None |
 | `gerbidigm.anotherTool` | Example custom tool | None |
 
-### New Skills
+### Skills
 
 1. **[docs-image-analysis.md](skills/gerbidigm/docs-image-analysis.md)** (2,400+ lines)
-   - Complete workflow documentation
+   - Image extraction and AI analysis workflow
    - 6 detailed use cases with examples
    - Performance and cost optimization
    - Model selection guidance
    - Rate limiting strategies
    - Advanced patterns and troubleshooting
 
-2. **[SETUP.md](skills/gerbidigm/SETUP.md)** (300+ lines)
+2. **[docs-image-insertion.md](skills/gerbidigm/docs-image-insertion.md)** (New!)
+   - Complete guide for creating docs with images
+   - Image positioning (beginning, end, specific indices)
+   - Image sizing in points (72 points = 1 inch)
+   - 5 common workflows (reports, galleries, technical docs)
+   - Batch upload patterns
+   - Error handling and troubleshooting
+
+3. **[SETUP.md](skills/gerbidigm/SETUP.md)** (300+ lines)
    - Prerequisites and installation
    - Gemini API key configuration
    - Tool verification steps
@@ -53,8 +70,11 @@ This document summarizes the new Gerbidigm tools for extracting and analyzing im
    - Added `@google/generative-ai` dependency
 
 2. **[register-tools.ts](workspace-server/src/gerbidigm/register-tools.ts)**
-   - Registered 3 new tools (docs.extractImages, gemini.describeImage, gemini.describeImageBatch)
-   - Updated tool count from 5 to 8
+   - Registered 6 image tools total:
+     - Extraction: extractImages
+     - Analysis: describeImage, describeImageBatch
+     - Insertion: uploadImage, insertImage, createWithImages
+   - Updated tool count from 5 to 11
 
 3. **[README.md](skills/gerbidigm/README.md)**
    - Added documentation for new skills

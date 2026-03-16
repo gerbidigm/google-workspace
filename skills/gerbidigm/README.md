@@ -64,6 +64,27 @@ Covers end-to-end workflows including:
 
 **Prerequisites:** Requires `GEMINI_API_KEY` environment variable (see `SETUP.md`)
 
+### `docs-image-insertion.md`
+
+Complete guide for creating Google Docs with images:
+
+- `gerbidigm_drive_uploadImage` - Upload local images to Google Drive
+- `gerbidigm_docs_insertImage` - Insert images into existing documents
+- `gerbidigm_docs_createWithImages` - Create new documents with mixed text/image content
+
+Covers comprehensive workflows including:
+
+- Image positioning with character-level precision
+- Image sizing in points (1 inch = 72 points)
+- Multi-tab document support
+- Batch upload patterns
+- Document structure best practices
+- Common workflows (reports, galleries, technical docs)
+
+**Use this skill when:** Creating documents with embedded images, building reports with charts/diagrams, generating image galleries, or inserting screenshots into existing docs.
+
+**Prerequisites:** Google Workspace authentication (no Gemini API key needed)
+
 ## Using Skills with Claude Code
 
 Skills can be loaded during a conversation to provide context-specific guidance. There are two ways to access skills:

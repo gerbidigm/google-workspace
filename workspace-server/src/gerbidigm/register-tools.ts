@@ -12,6 +12,7 @@ import { ExampleCustomService } from './services/ExampleCustomService';
 import { FlexibleGmailService } from './services/FlexibleGmailService';
 import { DocsImageService } from './services/DocsImageService';
 import { GeminiService } from './services/GeminiService';
+import { DriveUploadService } from './services/DriveUploadService';
 
 /**
  * Registration options passed from main index.ts
@@ -58,6 +59,7 @@ export async function registerGerbidigmTools(
   const flexibleGmailService = new FlexibleGmailService(authManager);
   const docsImageService = new DocsImageService(authManager);
   const geminiService = new GeminiService();
+  const driveUploadService = new DriveUploadService(authManager);
 
   // Register custom tools with a 'gerbidigm' prefix to avoid conflicts
   // Tool names will be normalized to 'gerbidigm_echo' or 'gerbidigm.echo'
@@ -282,9 +284,137 @@ export async function registerGerbidigmTools(
     geminiService.describeImageBatch,
   );
 
+  // Drive image upload tool
+  server.registerTool(
+    `gerbidigm${separator}drive${separator}uploadImage`,
+    {
+      description:
+        'Upload a local image file to Google Drive. The uploaded image can then be inserted into Google Docs. Supports PNG, JPEG, GIF, and SVG formats up to 50MB. Returns the Drive file ID and content link that can be used with docs.insertImage.',
+      inputSchema: {
+        localPath: z
+          .string()
+          .describe(
+            'Absolute path to the local image file to upload (e.g., "/Users/name/image.png").',
+          ),
+        name: z
+          .string()
+          .optional()
+          .describe(
+            'Optional custom name for the file in Drive. Defaults to the original filename.',
+          ),
+        folderId: z
+          .string()
+          .optional()
+          .describe(
+            'Optional Google Drive folder ID to upload to. If not provided, uploads to root directory.',
+          ),
+        makePublic: z
+          .boolean()
+          .optional()
+          .default(false)
+          .describe(
+            'If true, makes the file viewable by anyone with the link. Required for inserting into docs in some cases.',
+          ),
+      },
+    },
+    driveUploadService.uploadImage,
+  );
+
+  // Docs insert image tool
+  server.registerTool(
+    `gerbidigm${separator}docs${separator}insertImage`,
+    {
+      description:
+        'Insert an image into a Google Doc at a specified position. Supports images from public URLs or Google Drive file IDs. Images can be sized and positioned as needed.',
+      inputSchema: {
+        documentId: z
+          .string()
+          .describe(
+            'The Google Doc ID or URL to insert the image into. Can be a full URL or just the document ID.',
+          ),
+        imageUri: z
+          .string()
+          .optional()
+          .describe(
+            'Public URL of the image to insert. Must be accessible without authentication.',
+          ),
+        driveFileId: z
+          .string()
+          .optional()
+          .describe(
+            'Google Drive file ID of the image to insert. Alternative to imageUri.',
+          ),
+        position: z
+          .union([z.string(), z.number()])
+          .optional()
+          .default('end')
+          .describe(
+            'Where to insert the image: "beginning", "end", or a numeric index (>= 1). Defaults to "end".',
+          ),
+        width: z
+          .number()
+          .optional()
+          .describe('Optional width in points (72 points = 1 inch).'),
+        height: z
+          .number()
+          .optional()
+          .describe('Optional height in points (72 points = 1 inch).'),
+        tabId: z
+          .string()
+          .optional()
+          .describe('Optional tab ID to insert into a specific tab.'),
+      },
+    },
+    docsImageService.insertImage,
+  );
+
+  // Docs create with images tool
+  server.registerTool(
+    `gerbidigm${separator}docs${separator}createWithImages`,
+    {
+      description:
+        'Create a new Google Doc with mixed text and image content in a single operation. This is a convenience wrapper that creates the document and inserts all content atomically. Perfect for generating reports, documentation, or presentations with embedded images.',
+      inputSchema: {
+        title: z.string().describe('The title for the new Google Doc.'),
+        content: z
+          .array(
+            z.discriminatedUnion('type', [
+              z.object({
+                type: z.literal('text'),
+                text: z.string().describe('Text content to insert.'),
+              }),
+              z.object({
+                type: z.literal('image'),
+                uri: z
+                  .string()
+                  .optional()
+                  .describe('Public URL of the image to insert.'),
+                driveFileId: z
+                  .string()
+                  .optional()
+                  .describe('Google Drive file ID of the image to insert.'),
+                width: z
+                  .number()
+                  .optional()
+                  .describe('Optional width in points (72 points = 1 inch).'),
+                height: z
+                  .number()
+                  .optional()
+                  .describe('Optional height in points (72 points = 1 inch).'),
+              }),
+            ]),
+          )
+          .describe(
+            'Array of content items (text blocks and images) to insert into the document in order.',
+          ),
+      },
+    },
+    docsImageService.createWithImages,
+  );
+
   // Add more tool registrations here as you build them
   // server.registerTool(`gerbidigm${separator}yourTool`, {...}, yourService.yourMethod);
 
-  const toolCount = 7 + (services?.peopleService ? 1 : 0);
+  const toolCount = 10 + (services?.peopleService ? 1 : 0);
   console.error(`Registered ${toolCount} Gerbidigm custom tools.`);
 }
