@@ -1,0 +1,21 @@
+{
+  "name": "gerbidigm",
+  "owner": {
+    "name": "Gerbidigm"
+  },
+  "metadata": {
+    "description": "Google Workspace MCP integration with Gerbidigm enhancements",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "google-workspace-gerbidigm",
+      "source": "./claude-plugin",
+      "description": "Google Workspace MCP integration with Gerbidigm enhancements.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Gerbidigm"
+      }
+    }
+  ]
+}
