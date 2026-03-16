@@ -1,0 +1,23 @@
+{
+  "name": "google-workspace-gerbidigm",
+  "version": "0.1.0",
+  "description": "Google Workspace MCP integration with Gerbidigm enhancements. Manage Gmail, Docs, Sheets, Slides, Drive, Calendar, Chat, and People API. Includes flexible Gmail fetch tools with field masks and batch operations for optimized performance.",
+  "author": {
+    "name": "Gerbidigm"
+  },
+  "keywords": [
+    "google",
+    "workspace",
+    "gmail",
+    "docs",
+    "sheets",
+    "slides",
+    "drive",
+    "calendar",
+    "mcp",
+    "gerbidigm"
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/gerbidigm/workspace",
+  "repository": "https://github.com/gerbidigm/workspace"
+}
