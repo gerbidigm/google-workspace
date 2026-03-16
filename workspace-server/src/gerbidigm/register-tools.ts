@@ -420,7 +420,7 @@ export async function registerGerbidigmTools(
     `gerbidigm${separator}docs${separator}getStructure`,
     {
       description:
-        'Get the full structure of a Google Doc with start/end indices for every element (paragraphs, tables, section breaks). Use this BEFORE any index-based edit — especially deleteRange — to identify the exact indices of the content you want to modify. Returns tabs, each containing a flat list of content blocks with their text and index ranges.',
+        'Get the structure of a Google Doc with start/end indices for every element. Supports filters to keep responses small: elementTypes limits to specific block types, namedStyles filters paragraphs by style (e.g. headings only), fromIndex/toIndex scopes to a known section, and includeRuns=false strips per-run detail. Use this BEFORE index-based edits when findTextRange is not sufficient.',
       inputSchema: {
         documentId: z
           .string()
@@ -432,6 +432,41 @@ export async function registerGerbidigmTools(
           .optional()
           .describe(
             'Optional tab ID to limit results to a single tab. If omitted, all tabs are returned.',
+          ),
+        elementTypes: z
+          .array(
+            z.enum(['paragraph', 'table', 'sectionBreak', 'tableOfContents']),
+          )
+          .optional()
+          .describe(
+            'Only return elements of these types. E.g. ["paragraph"] to exclude tables and breaks.',
+          ),
+        namedStyles: z
+          .array(z.string())
+          .optional()
+          .describe(
+            'Only return paragraphs with these named styles. E.g. ["HEADING_1","HEADING_2","HEADING_3"] for an outline. Possible values: NORMAL_TEXT, TITLE, SUBTITLE, HEADING_1 through HEADING_6. Non-paragraph elements are unaffected by this filter.',
+          ),
+        fromIndex: z
+          .number()
+          .int()
+          .optional()
+          .describe(
+            'Only return elements whose endIndex > fromIndex. Use with toIndex to scope to a known section.',
+          ),
+        toIndex: z
+          .number()
+          .int()
+          .optional()
+          .describe(
+            'Only return elements whose startIndex < toIndex. Use with fromIndex to scope to a known section.',
+          ),
+        includeRuns: z
+          .boolean()
+          .optional()
+          .default(true)
+          .describe(
+            'Include per-run detail (startIndex, endIndex, text) within each paragraph. Set to false to reduce response size when you only need paragraph-level indices and text.',
           ),
       },
       ...readOnlyToolProps,

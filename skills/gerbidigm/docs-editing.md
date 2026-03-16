@@ -177,10 +177,18 @@ whole paragraph or table by its position in the document.
 
 **Parameters:**
 
-| Parameter    | Type   | Required | Description                                   |
-| ------------ | ------ | -------- | --------------------------------------------- |
-| `documentId` | string | ✅       | Doc ID or URL                                 |
-| `tabId`      | string | ⬜       | Limit to one tab; returns all tabs if omitted |
+| Parameter      | Type     | Required | Description                                                                              |
+| -------------- | -------- | -------- | ---------------------------------------------------------------------------------------- |
+| `documentId`   | string   | ✅       | Doc ID or URL                                                                            |
+| `tabId`        | string   | ⬜       | Limit to one tab; returns all tabs if omitted                                            |
+| `elementTypes` | string[] | ⬜       | Only return these types: `paragraph`, `table`, `sectionBreak`, `tableOfContents`         |
+| `namedStyles`  | string[] | ⬜       | Only return paragraphs with these styles (see below). Non-paragraph elements unaffected. |
+| `fromIndex`    | number   | ⬜       | Only return elements whose endIndex > fromIndex                                          |
+| `toIndex`      | number   | ⬜       | Only return elements whose startIndex < toIndex                                          |
+| `includeRuns`  | boolean  | ⬜       | Include per-run detail in paragraphs. Default: true. Set false to halve response size.   |
+
+**Named style values** (for `namedStyles`): `NORMAL_TEXT`, `TITLE`, `SUBTITLE`,
+`HEADING_1`, `HEADING_2`, `HEADING_3`, `HEADING_4`, `HEADING_5`, `HEADING_6`
 
 **Response shape:**
 
@@ -197,9 +205,10 @@ whole paragraph or table by its position in the document.
           "type": "paragraph",
           "startIndex": 1,
           "endIndex": 13,
-          "text": "Hello, world\n",
+          "text": "Introduction\n",
+          "namedStyleType": "HEADING_1",
           "runs": [
-            { "startIndex": 1, "endIndex": 12, "text": "Hello, world" },
+            { "startIndex": 1, "endIndex": 12, "text": "Introduction" },
             { "startIndex": 12, "endIndex": 13, "text": "\n" }
           ]
         },
@@ -217,9 +226,20 @@ whole paragraph or table by its position in the document.
 }
 ```
 
-> **Context note:** For large documents `getStructure` returns substantial JSON
-> that stays in your context window. Prefer `findTextRange` when you know the
-> text you want to target — it returns only the indices you need.
+**Reducing response size for large documents:**
+
+| Goal                              | Parameters to use                                                                    |
+| --------------------------------- | ------------------------------------------------------------------------------------ |
+| Document outline only             | `elementTypes: ["paragraph"], namedStyles: ["HEADING_1","HEADING_2","HEADING_3"]`    |
+| No run detail                     | `includeRuns: false`                                                                 |
+| Scope to a known section          | `fromIndex: 500, toIndex: 1200`                                                      |
+| Paragraphs only, compact          | `elementTypes: ["paragraph"], includeRuns: false`                                    |
+| Full outline + section boundaries | `elementTypes: ["paragraph","sectionBreak"], namedStyles: ["HEADING_1","HEADING_2"]` |
+
+> **Context note:** For large documents, `getStructure` without filters returns
+> substantial JSON that stays in your context window. Prefer `findTextRange`
+> when you know the text to target. When you do need structure, use filters —
+> `includeRuns: false` alone cuts paragraph output roughly in half.
 
 ## Examples
 

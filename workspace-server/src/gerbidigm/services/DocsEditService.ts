@@ -21,7 +21,8 @@ interface ParagraphBlock {
   startIndex: number;
   endIndex: number;
   text: string;
-  runs: TextRun[];
+  namedStyleType?: string;
+  runs?: TextRun[];
 }
 
 interface TableCellBlock {
@@ -99,6 +100,13 @@ export class DocsEditService {
 
   private _parseElements(
     elements: docs_v1.Schema$StructuralElement[],
+    opts: {
+      elementTypes?: string[];
+      namedStyles?: string[];
+      fromIndex?: number;
+      toIndex?: number;
+      includeRuns: boolean;
+    },
   ): ContentBlock[] {
     const blocks: ContentBlock[] = [];
 
@@ -106,7 +114,27 @@ export class DocsEditService {
       const startIndex = el.startIndex ?? 0;
       const endIndex = el.endIndex ?? 0;
 
+      // Index window filter — skip elements outside the requested range
+      if (opts.fromIndex != null && endIndex <= opts.fromIndex) continue;
+      if (opts.toIndex != null && startIndex >= opts.toIndex) continue;
+
       if (el.paragraph) {
+        if (opts.elementTypes && !opts.elementTypes.includes('paragraph')) {
+          continue;
+        }
+
+        const namedStyleType =
+          el.paragraph.paragraphStyle?.namedStyleType ?? undefined;
+
+        // namedStyles filter only applies to paragraphs; non-matching styles
+        // are skipped while other element types pass through
+        if (
+          opts.namedStyles &&
+          (!namedStyleType || !opts.namedStyles.includes(namedStyleType))
+        ) {
+          continue;
+        }
+
         const runs: TextRun[] = (el.paragraph.elements ?? [])
           .filter((r) => r.startIndex != null && r.endIndex != null)
           .map((r) => ({
@@ -115,14 +143,21 @@ export class DocsEditService {
             text: this._paragraphElementText(r),
           }));
 
-        blocks.push({
+        const block: ParagraphBlock = {
           type: 'paragraph',
           startIndex,
           endIndex,
           text: runs.map((r) => r.text).join(''),
-          runs,
-        });
+          namedStyleType,
+        };
+        if (opts.includeRuns) {
+          block.runs = runs;
+        }
+        blocks.push(block);
       } else if (el.table) {
+        if (opts.elementTypes && !opts.elementTypes.includes('table')) {
+          continue;
+        }
         const cells: TableCellBlock[] = [];
         for (const row of el.table.tableRows ?? []) {
           for (const cell of row.tableCells ?? []) {
@@ -146,8 +181,17 @@ export class DocsEditService {
           cells,
         });
       } else if (el.tableOfContents) {
+        if (
+          opts.elementTypes &&
+          !opts.elementTypes.includes('tableOfContents')
+        ) {
+          continue;
+        }
         blocks.push({ type: 'tableOfContents', startIndex, endIndex });
       } else if (el.sectionBreak) {
+        if (opts.elementTypes && !opts.elementTypes.includes('sectionBreak')) {
+          continue;
+        }
         blocks.push({ type: 'sectionBreak', startIndex, endIndex });
       }
     }
@@ -157,15 +201,25 @@ export class DocsEditService {
 
   /**
    * Return document structure with start/end indices for every element.
-   * Use this before deleteRange or other index-based edits so you know
-   * which indices to target.
+   * Supports filtering by element type, paragraph named style, index window,
+   * and run inclusion to keep responses small for large documents.
    */
   public getStructure = async ({
     documentId,
     tabId,
+    elementTypes,
+    namedStyles,
+    fromIndex,
+    toIndex,
+    includeRuns = true,
   }: {
     documentId: string;
     tabId?: string;
+    elementTypes?: string[];
+    namedStyles?: string[];
+    fromIndex?: number;
+    toIndex?: number;
+    includeRuns?: boolean;
   }) => {
     logToFile(
       `[DocsEditService] getStructure for document: ${documentId}, tabId: ${tabId}`,
@@ -188,18 +242,33 @@ export class DocsEditService {
         throw new Error(`Tab with ID ${tabId} not found.`);
       }
 
+      const opts = {
+        elementTypes,
+        namedStyles,
+        fromIndex,
+        toIndex,
+        includeRuns,
+      };
+
       const result = {
         documentId: res.data.documentId,
         title: res.data.title,
         tabs: tabsToProcess.map((tab) => ({
           tabId: tab.tabProperties?.tabId,
           title: tab.tabProperties?.title,
-          elements: this._parseElements(tab.documentTab?.body?.content ?? []),
+          elements: this._parseElements(
+            tab.documentTab?.body?.content ?? [],
+            opts,
+          ),
         })),
       };
 
+      const totalElements = result.tabs.reduce(
+        (n, t) => n + t.elements.length,
+        0,
+      );
       logToFile(
-        `[DocsEditService] getStructure returned ${result.tabs.length} tab(s)`,
+        `[DocsEditService] getStructure returned ${totalElements} element(s) across ${result.tabs.length} tab(s)`,
       );
 
       return {
