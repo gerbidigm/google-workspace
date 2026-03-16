@@ -149,4 +149,73 @@ export class DriveUploadService {
       };
     }
   };
+
+  /**
+   * Copy any file in Google Drive (including Google Docs, Sheets, Slides).
+   * Returns the new file's ID and web link.
+   */
+  public copyFile = async ({
+    fileId,
+    name,
+    folderId,
+  }: {
+    fileId: string;
+    name?: string;
+    folderId?: string;
+  }) => {
+    logToFile(`[DriveUploadService] copyFile: ${fileId}`);
+    try {
+      const drive = await this.getDriveClient();
+
+      // Fetch original name as fallback
+      const original = await drive.files.get({
+        fileId,
+        fields: 'name',
+        supportsAllDrives: true,
+      });
+
+      const copyName = name ?? `Copy of ${original.data.name ?? fileId}`;
+
+      const requestBody: drive_v3.Schema$File = { name: copyName };
+      if (folderId) {
+        requestBody.parents = [folderId];
+      }
+
+      const copy = await drive.files.copy({
+        fileId,
+        requestBody,
+        fields: 'id,name,mimeType,webViewLink',
+        supportsAllDrives: true,
+      });
+
+      logToFile(`[DriveUploadService] copyFile succeeded: ${copy.data.id}`);
+
+      return {
+        content: [
+          {
+            type: 'text' as const,
+            text: JSON.stringify({
+              fileId: copy.data.id,
+              name: copy.data.name,
+              mimeType: copy.data.mimeType,
+              webViewLink: copy.data.webViewLink,
+            }),
+          },
+        ],
+      };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      logToFile(`[DriveUploadService] Error during copyFile: ${errorMessage}`);
+      return {
+        isError: true,
+        content: [
+          {
+            type: 'text' as const,
+            text: JSON.stringify({ error: errorMessage }),
+          },
+        ],
+      };
+    }
+  };
 }

@@ -323,6 +323,35 @@ export async function registerGerbidigmTools(
     driveUploadService.uploadImage,
   );
 
+  // Drive copy tool
+  server.registerTool(
+    `gerbidigm${separator}drive${separator}copyFile`,
+    {
+      description:
+        'Copy any file in Google Drive, including Google Docs, Sheets, and Slides. Returns the new file ID and web link. Use this to create a safe test copy before making destructive edits.',
+      inputSchema: {
+        fileId: z
+          .string()
+          .describe(
+            'The Drive file ID to copy. For Google Docs, this is the document ID from the URL.',
+          ),
+        name: z
+          .string()
+          .optional()
+          .describe(
+            'Name for the copy. Defaults to "Copy of <original name>".',
+          ),
+        folderId: z
+          .string()
+          .optional()
+          .describe(
+            'Drive folder ID to place the copy in. Defaults to the same folder as the original.',
+          ),
+      },
+    },
+    driveUploadService.copyFile,
+  );
+
   // Docs insert image tool
   server.registerTool(
     `gerbidigm${separator}docs${separator}insertImage`,
@@ -559,6 +588,6 @@ export async function registerGerbidigmTools(
   // Add more tool registrations here as you build them
   // server.registerTool(`gerbidigm${separator}yourTool`, {...}, yourService.yourMethod);
 
-  const toolCount = 14 + (services?.peopleService ? 1 : 0);
+  const toolCount = 15 + (services?.peopleService ? 1 : 0);
   console.error(`Registered ${toolCount} Gerbidigm custom tools.`);
 }
