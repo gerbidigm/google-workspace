@@ -80,7 +80,8 @@ Show me just the From, Subject, and Date.
 1. Run `npm run build`
 2. Run `node scripts/verify-tools.js`
 3. Completely quit and reopen Claude Desktop
-4. Check `~/Library/Application Support/Claude/claude_desktop_config.json` has correct path
+4. Check `~/Library/Application Support/Claude/claude_desktop_config.json` has
+   correct path
 
 **Authentication errors?**
 
@@ -109,7 +110,8 @@ node scripts/auth-utils.js login     # Re-authenticate if needed
 
 ## Configuration
 
-The MCP server config in `~/Library/Application Support/Claude/claude_desktop_config.json`:
+The MCP server config in
+`~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 ```json
 {

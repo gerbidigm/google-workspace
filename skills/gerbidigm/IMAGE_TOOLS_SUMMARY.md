@@ -1,6 +1,7 @@
 # Image Tools - Complete Summary
 
-This document summarizes the Gerbidigm tools for working with images in Google Docs:
+This document summarizes the Gerbidigm tools for working with images in Google
+Docs:
 
 - **Extraction & Analysis** - Extract images and analyze with Gemini AI
 - **Insertion & Creation** - Upload images and create docs with embedded images
@@ -22,26 +23,27 @@ This document summarizes the Gerbidigm tools for working with images in Google D
 
 ### All Gerbidigm Tools (11 total)
 
-| Tool Name | Description | Prerequisites |
-|-----------|-------------|---------------|
-| **Image Extraction & Analysis** | | |
-| `gerbidigm.docs.extractImages` | Extract all images from a Google Doc with metadata | Google Workspace auth |
-| `gerbidigm.gemini.describeImage` | Analyze a single image with Gemini AI | GEMINI_API_KEY |
-| `gerbidigm.gemini.describeImageBatch` | Batch analyze up to 50 images efficiently | GEMINI_API_KEY |
-| **Image Insertion & Creation** | | |
-| `gerbidigm.drive.uploadImage` | Upload local images to Google Drive (PNG, JPEG, GIF, SVG) | Google Workspace auth |
-| `gerbidigm.docs.insertImage` | Insert images into existing Google Docs | Google Workspace auth |
-| `gerbidigm.docs.createWithImages` | Create new docs with mixed text/image content | Google Workspace auth |
-| **Other Tools** | | |
-| `gerbidigm.gmail.fetchFlexible` | Flexible Gmail message fetching | Google Workspace auth |
-| `gerbidigm.gmail.batchFetchFlexible` | Batch Gmail fetching | Google Workspace auth |
-| `gerbidigm.searchDirectory` | Search Workspace directory | Google Workspace auth |
-| `gerbidigm.echo` | Example custom tool | None |
-| `gerbidigm.anotherTool` | Example custom tool | None |
+| Tool Name                             | Description                                               | Prerequisites         |
+| ------------------------------------- | --------------------------------------------------------- | --------------------- |
+| **Image Extraction & Analysis**       |                                                           |                       |
+| `gerbidigm.docs.extractImages`        | Extract all images from a Google Doc with metadata        | Google Workspace auth |
+| `gerbidigm.gemini.describeImage`      | Analyze a single image with Gemini AI                     | GEMINI_API_KEY        |
+| `gerbidigm.gemini.describeImageBatch` | Batch analyze up to 50 images efficiently                 | GEMINI_API_KEY        |
+| **Image Insertion & Creation**        |                                                           |                       |
+| `gerbidigm.drive.uploadImage`         | Upload local images to Google Drive (PNG, JPEG, GIF, SVG) | Google Workspace auth |
+| `gerbidigm.docs.insertImage`          | Insert images into existing Google Docs                   | Google Workspace auth |
+| `gerbidigm.docs.createWithImages`     | Create new docs with mixed text/image content             | Google Workspace auth |
+| **Other Tools**                       |                                                           |                       |
+| `gerbidigm.gmail.fetchFlexible`       | Flexible Gmail message fetching                           | Google Workspace auth |
+| `gerbidigm.gmail.batchFetchFlexible`  | Batch Gmail fetching                                      | Google Workspace auth |
+| `gerbidigm.searchDirectory`           | Search Workspace directory                                | Google Workspace auth |
+| `gerbidigm.echo`                      | Example custom tool                                       | None                  |
+| `gerbidigm.anotherTool`               | Example custom tool                                       | None                  |
 
 ### Skills
 
-1. **[docs-image-analysis.md](skills/gerbidigm/docs-image-analysis.md)** (2,400+ lines)
+1. **[docs-image-analysis.md](skills/gerbidigm/docs-image-analysis.md)** (2,400+
+   lines)
    - Image extraction and AI analysis workflow
    - 6 detailed use cases with examples
    - Performance and cost optimization
@@ -49,7 +51,8 @@ This document summarizes the Gerbidigm tools for working with images in Google D
    - Rate limiting strategies
    - Advanced patterns and troubleshooting
 
-2. **[docs-image-insertion.md](skills/gerbidigm/docs-image-insertion.md)** (New!)
+2. **[docs-image-insertion.md](skills/gerbidigm/docs-image-insertion.md)**
+   (New!)
    - Complete guide for creating docs with images
    - Image positioning (beginning, end, specific indices)
    - Image sizing in points (72 points = 1 inch)
@@ -87,19 +90,19 @@ This document summarizes the Gerbidigm tools for working with images in Google D
 ```typescript
 // Step 1: Extract images from a Google Doc
 const { images } = await gerbidigm.docs.extractImages({
-  documentId: "1abc...xyz"
+  documentId: '1abc...xyz',
 });
 // Returns: Array of images with contentUri, mimeType, positioning, etc.
 
 // Step 2: Analyze all images with Gemini AI
 const analysis = await gerbidigm.gemini.describeImageBatch({
-  images: images.map(img => ({
+  images: images.map((img) => ({
     url: img.contentUri,
-    mimeType: img.mimeType
+    mimeType: img.mimeType,
   })),
-  prompt: "Describe each image in detail.",
-  model: "gemini-1.5-flash",
-  individualPrompts: true
+  prompt: 'Describe each image in detail.',
+  model: 'gemini-1.5-flash',
+  individualPrompts: true,
 });
 // Returns: Descriptions for each image with success/error status
 
@@ -114,12 +117,14 @@ analysis.results.forEach((result, i) => {
 ## Key Features
 
 ### 1. Image Extraction
+
 - **Positioned Objects API**: Uses official Google Docs API field
 - **Multi-tab Support**: Works with tabbed documents
 - **Rich Metadata**: Returns URLs, MIME types, dimensions, positioning
 - **Tab Context**: Includes which tab each image is from
 
 ### 2. AI Analysis
+
 - **Multiple Models**: Support for Flash (fast/cheap) and Pro (advanced)
 - **Flexible Input**: URL or base64-encoded images
 - **Batch Processing**: Up to 50 images per request
@@ -128,6 +133,7 @@ analysis.results.forEach((result, i) => {
   - Shared context: All images in one request (comparative)
 
 ### 3. Cost Optimization
+
 - **Token-based pricing**: ~$0.0002 per image (Flash)
 - **Batch efficiency**: Saves rate limits, not costs
 - **Free tier**: 15 requests/min, 1M tokens/day
@@ -163,11 +169,13 @@ analysis.results.forEach((result, i) => {
 ## Setup Requirements
 
 ### 1. Google Workspace (Already Configured)
+
 - Required for `gerbidigm.docs.extractImages`
 - Uses existing OAuth authentication
 - No additional setup needed
 
 ### 2. Gemini API Key (New Requirement)
+
 - Required for `gerbidigm.gemini.*` tools
 - Get key at: https://aistudio.google.com/app/apikey
 - Set environment variable:
@@ -176,6 +184,7 @@ analysis.results.forEach((result, i) => {
   ```
 
 ### 3. Install Dependencies
+
 ```bash
 npm install  # Installs @google/generative-ai
 npm run build
@@ -184,6 +193,7 @@ npm run build
 ## API Costs & Limits
 
 ### Google Workspace APIs
+
 - **Cost**: FREE ✅
 - **Rate Limits**: 300 requests/min (Docs API)
 - **Usage**: 1 request per extractImages call
@@ -191,18 +201,21 @@ npm run build
 ### Gemini API
 
 **Free Tier:**
+
 - 15 requests/minute
 - 1 million tokens/day
 - 1,500 requests/day
 - Good for ~3,870 images/day
 
 **Paid Tier (Flash):**
+
 - 360 requests/minute
 - $0.075 per 1M input tokens
 - $0.30 per 1M output tokens
 - ~$0.0002 per image analyzed
 
 **Cost Examples:**
+
 - 100 images with descriptions: **$0.017** (Flash) or **$0.28** (Pro)
 - Alt text for 1,000 images: **$0.17** (Flash)
 
@@ -219,15 +232,18 @@ npm run build
 ### For Users
 
 1. **Setup**: Follow [SETUP.md](skills/gerbidigm/SETUP.md)
-2. **Learn**: Read [docs-image-analysis.md](skills/gerbidigm/docs-image-analysis.md)
+2. **Learn**: Read
+   [docs-image-analysis.md](skills/gerbidigm/docs-image-analysis.md)
 3. **Test**: Try extracting images from a sample document
 4. **Analyze**: Use Gemini tools to describe the images
 
 ### For Developers
 
 1. **Review Code**:
-   - [DocsImageService.ts](workspace-server/src/gerbidigm/services/DocsImageService.ts) - Image extraction
-   - [GeminiService.ts](workspace-server/src/gerbidigm/services/GeminiService.ts) - AI analysis
+   - [DocsImageService.ts](workspace-server/src/gerbidigm/services/DocsImageService.ts) -
+     Image extraction
+   - [GeminiService.ts](workspace-server/src/gerbidigm/services/GeminiService.ts) -
+     AI analysis
 
 2. **Extend**:
    - Add more image analysis prompts
@@ -265,11 +281,13 @@ Return: AI-generated descriptions
 ### API Integration
 
 **Google Docs API:**
+
 - Endpoint: `docs.documents.get()`
 - Fields: `tabs` with `includeTabsContent: true`
 - Extracts: `tabs.documentTab.positionedObjects`
 
 **Gemini API:**
+
 - Package: `@google/generative-ai`
 - Models: `gemini-1.5-flash`, `gemini-1.5-pro`
 - Input: Text prompts + inline image data (base64)
@@ -277,6 +295,7 @@ Return: AI-generated descriptions
 ### Error Handling
 
 Both services include comprehensive error handling:
+
 - Invalid document IDs
 - Missing API keys
 - Network failures
@@ -322,6 +341,7 @@ When adding new Gerbidigm tools:
 ## Support
 
 For questions or issues:
+
 - Review skill documentation first
 - Check [SETUP.md](skills/gerbidigm/SETUP.md) troubleshooting
 - Verify API keys and authentication

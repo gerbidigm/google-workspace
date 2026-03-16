@@ -25,16 +25,21 @@ export class ExampleCustomService {
         content: [
           {
             type: 'text' as const,
-            text: JSON.stringify({
-              echo: message,
-              timestamp: new Date().toISOString(),
-              source: 'gerbidigm-custom-tool',
-            }, null, 2),
+            text: JSON.stringify(
+              {
+                echo: message,
+                timestamp: new Date().toISOString(),
+                source: 'gerbidigm-custom-tool',
+              },
+              null,
+              2,
+            ),
           },
         ],
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       return {
         content: [
           {

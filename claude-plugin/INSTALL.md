@@ -1,17 +1,20 @@
 # Installation Guide
 
-Step-by-step guide to install the Google Workspace + Gerbidigm plugin for Claude Code.
+Step-by-step guide to install the Google Workspace + Gerbidigm plugin for Claude
+Code.
 
 ## Prerequisites
 
 ### 1. Node.js 20+
 
 Check your version:
+
 ```bash
 node --version
 ```
 
 If you need to install or upgrade:
+
 - **macOS**: `brew install node@20`
 - **Linux**: Use nvm or your package manager
 - **Windows**: Download from [nodejs.org](https://nodejs.org)
@@ -19,11 +22,13 @@ If you need to install or upgrade:
 ### 2. Claude Code CLI
 
 Install if you haven't already:
+
 ```bash
 npm install -g @anthropic/claude-code
 ```
 
 Or via brew:
+
 ```bash
 brew install claude-code
 ```
@@ -49,6 +54,7 @@ npm run build
 ```
 
 **Verify build succeeded:**
+
 ```bash
 ls workspace-server/dist/index.js
 ```
@@ -62,12 +68,14 @@ node scripts/auth-utils.js login
 ```
 
 Follow the prompts:
+
 1. A browser will open for Google OAuth
 2. Sign in to your Google account
 3. Grant the requested permissions
 4. Return to the terminal
 
 **Verify authentication:**
+
 ```bash
 node scripts/auth-utils.js status
 ```
@@ -81,6 +89,7 @@ node scripts/verify-tools.js
 ```
 
 Expected output:
+
 ```
 ✅ Gerbidigm tools registered: 5
 ✅ Server started successfully
@@ -89,8 +98,8 @@ Expected output:
 
 ### Step 4: Install the Plugin
 
-Claude Code requires a marketplace to install local plugins. Register this repo as a
-local marketplace, then install from it:
+Claude Code requires a marketplace to install local plugins. Register this repo
+as a local marketplace, then install from it:
 
 ```bash
 # From the workspace root directory:
@@ -99,6 +108,7 @@ claude plugin install google-workspace-gerbidigm@gerbidigm
 ```
 
 Expected output:
+
 ```
 Adding marketplace...
 ✔ Successfully added marketplace: gerbidigm (declared in user settings)
@@ -107,11 +117,13 @@ Installing plugin "google-workspace-gerbidigm@gerbidigm"...
 ```
 
 **Verify installation:**
+
 ```bash
 claude plugin list
 ```
 
 Should show:
+
 ```
 google-workspace-gerbidigm@gerbidigm  v0.1.0  enabled
 ```
@@ -119,20 +131,24 @@ google-workspace-gerbidigm@gerbidigm  v0.1.0  enabled
 ### Step 5: Test the Installation
 
 Start Claude Code:
+
 ```bash
 claude
 ```
 
 Check MCP status:
+
 ```
 /mcp
 ```
 
 Expected:
+
 - `google-workspace` server listed
 - Status: **connected** ✅
 
 Test tools are available:
+
 ```
 What gerbidigm tools are available?
 ```
@@ -164,6 +180,7 @@ If this works, you're all set! 🎉
 ### Issue: npm install fails
 
 **Solution:**
+
 ```bash
 # Clear cache
 npm cache clean --force
@@ -178,6 +195,7 @@ npm install
 ### Issue: Build fails
 
 **Solution:**
+
 ```bash
 # Check Node version
 node --version  # Should be 20.x
@@ -190,6 +208,7 @@ npm run build
 ### Issue: Authentication fails
 
 **Solution:**
+
 ```bash
 # Clear existing credentials
 node scripts/auth-utils.js clear
@@ -198,15 +217,15 @@ node scripts/auth-utils.js clear
 node scripts/auth-utils.js login
 ```
 
-**For headless environments (SSH, WSL, etc.):**
-The login script will display a URL you can open in any browser (phone, local machine, etc.).
+**For headless environments (SSH, WSL, etc.):** The login script will display a
+URL you can open in any browser (phone, local machine, etc.).
 
 ### Issue: Plugin install fails
 
 **Error:** "Plugin not found in any configured marketplace"
 
-`claude plugins install ./path` does not work for local plugins. You must register a
-marketplace first:
+`claude plugins install ./path` does not work for local plugins. You must
+register a marketplace first:
 
 ```bash
 # From the workspace root directory
@@ -216,23 +235,27 @@ claude plugin install google-workspace-gerbidigm@gerbidigm
 
 **Error:** "Marketplace file not found"
 
-The `.claude-plugin/marketplace.json` file is missing. Ensure you have the latest version
-of the repo (it should be present at `.claude-plugin/marketplace.json`).
+The `.claude-plugin/marketplace.json` file is missing. Ensure you have the
+latest version of the repo (it should be present at
+`.claude-plugin/marketplace.json`).
 
 ### Issue: Server not connecting
 
 **Check plugin configuration:**
+
 ```bash
 claude plugin get google-workspace-gerbidigm@gerbidigm
 ```
 
 **Reinstall plugin:**
+
 ```bash
 claude plugin uninstall google-workspace-gerbidigm@gerbidigm
 claude plugin install google-workspace-gerbidigm@gerbidigm
 ```
 
 **Check server manually:**
+
 ```bash
 node workspace-server/dist/index.js --debug
 ```
@@ -278,18 +301,20 @@ Reinstall the plugin for changes to take effect.
 You can install the plugin in different ways for different use cases:
 
 **Development (local, from source):**
+
 ```bash
 claude --plugin-dir ./claude-plugin
 ```
 
 **Personal (installed, user-scoped):**
+
 ```bash
 claude plugin marketplace add .
 claude plugin install google-workspace-gerbidigm@gerbidigm
 ```
 
-**Team (git clone + install):**
-Team members clone the repo and run the same two commands above.
+**Team (git clone + install):** Team members clone the repo and run the same two
+commands above.
 
 ## Uninstallation
 
@@ -341,7 +366,8 @@ If you encounter issues not covered here:
 
 1. Check [TESTING.md](TESTING.md) troubleshooting section
 2. Review [docs/CLAUDE_CODE_CLI.md](../docs/CLAUDE_CODE_CLI.md)
-3. Search existing [GitHub issues](https://github.com/gerbidigm/workspace/issues)
+3. Search existing
+   [GitHub issues](https://github.com/gerbidigm/workspace/issues)
 4. Open a new issue with:
    - Output of `node --version`
    - Output of `node scripts/verify-tools.js`

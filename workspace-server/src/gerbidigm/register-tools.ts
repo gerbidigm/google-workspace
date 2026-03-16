@@ -66,7 +66,8 @@ export async function registerGerbidigmTools(
   server.registerTool(
     `gerbidigm${separator}echo`,
     {
-      description: 'Example custom tool that echoes back a message with metadata.',
+      description:
+        'Example custom tool that echoes back a message with metadata.',
       inputSchema: {
         message: z.string().describe('The message to echo back.'),
       },

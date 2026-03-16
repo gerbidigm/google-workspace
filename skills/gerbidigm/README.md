@@ -4,7 +4,8 @@ This directory contains skill definitions for Gerbidigm custom MCP tools.
 
 ## What are Skills?
 
-Skills are markdown documentation files that provide guidance to AI agents on how to effectively use MCP tools. They include:
+Skills are markdown documentation files that provide guidance to AI agents on
+how to effectively use MCP tools. They include:
 
 - Detailed usage instructions
 - Common patterns and examples
@@ -23,7 +24,8 @@ Quick setup guide for Gerbidigm tools, including:
 - Installation and verification steps
 - Troubleshooting common issues
 
-**Use this skill when:** Setting up Gerbidigm tools for the first time or troubleshooting configuration issues.
+**Use this skill when:** Setting up Gerbidigm tools for the first time or
+troubleshooting configuration issues.
 
 ### `gmail-fetch.md`
 
@@ -38,7 +40,8 @@ These tools provide fine-grained control over Gmail API responses through:
 - Field masks for partial responses
 - Batch operations for efficiency
 
-**Use this skill when:** Working with Gmail messages and you need performance optimization or specific field control.
+**Use this skill when:** Working with Gmail messages and you need performance
+optimization or specific field control.
 
 **Related files:**
 
@@ -60,9 +63,11 @@ Covers end-to-end workflows including:
 - Cost optimization and batch processing strategies
 - Technical diagram analysis, alt text generation, data extraction
 
-**Use this skill when:** Working with images in Google Docs, generating accessibility content, analyzing diagrams, or extracting visual information.
+**Use this skill when:** Working with images in Google Docs, generating
+accessibility content, analyzing diagrams, or extracting visual information.
 
-**Prerequisites:** Requires `GEMINI_API_KEY` environment variable (see `SETUP.md`)
+**Prerequisites:** Requires `GEMINI_API_KEY` environment variable (see
+`SETUP.md`)
 
 ### `docs-image-insertion.md`
 
@@ -70,7 +75,8 @@ Complete guide for creating Google Docs with images:
 
 - `gerbidigm_drive_uploadImage` - Upload local images to Google Drive
 - `gerbidigm_docs_insertImage` - Insert images into existing documents
-- `gerbidigm_docs_createWithImages` - Create new documents with mixed text/image content
+- `gerbidigm_docs_createWithImages` - Create new documents with mixed text/image
+  content
 
 Covers comprehensive workflows including:
 
@@ -81,21 +87,26 @@ Covers comprehensive workflows including:
 - Document structure best practices
 - Common workflows (reports, galleries, technical docs)
 
-**Use this skill when:** Creating documents with embedded images, building reports with charts/diagrams, generating image galleries, or inserting screenshots into existing docs.
+**Use this skill when:** Creating documents with embedded images, building
+reports with charts/diagrams, generating image galleries, or inserting
+screenshots into existing docs.
 
 **Prerequisites:** Google Workspace authentication (no Gemini API key needed)
 
 ## Using Skills with Claude Code
 
-Skills can be loaded during a conversation to provide context-specific guidance. There are two ways to access skills:
+Skills can be loaded during a conversation to provide context-specific guidance.
+There are two ways to access skills:
 
 ### 1. Manual Reference (Current)
 
-Copy relevant sections from skill markdown files into your prompts or reference them when needed.
+Copy relevant sections from skill markdown files into your prompts or reference
+them when needed.
 
 ### 2. MCP Skill Protocol (Future)
 
-When the MCP protocol adds skill support, these files will be automatically discoverable and loadable by AI agents through the MCP server.
+When the MCP protocol adds skill support, these files will be automatically
+discoverable and loadable by AI agents through the MCP server.
 
 ## Skill File Structure
 
@@ -125,24 +136,31 @@ When creating custom Gerbidigm tools, consider adding a skill file if:
 # Tool Name Skill
 
 ## Overview
+
 Brief description of what this skill covers
 
 ## When to Use This Tool
+
 Specific scenarios and use cases
 
 ## Key Concepts
+
 Important options, parameters, or patterns
 
 ## Examples
+
 Practical examples with explanations
 
 ## Best Practices
+
 Recommended approaches
 
 ## Troubleshooting
+
 Common issues and solutions
 
 ## Additional Resources
+
 Links to relevant documentation
 ```
 

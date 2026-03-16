@@ -1,6 +1,7 @@
 # Quick Test Prompts for Claude Desktop
 
-Copy and paste these prompts directly into Claude Desktop to test the flexible Gmail tools.
+Copy and paste these prompts directly into Claude Desktop to test the flexible
+Gmail tools.
 
 ## Setup
 
@@ -10,7 +11,8 @@ First, get some message IDs to work with:
 Search my Gmail for recent emails from the last 24 hours and show me 5 message IDs.
 ```
 
-Save a few message IDs from the response. Replace `<MSG_ID>` in the prompts below with actual IDs.
+Save a few message IDs from the response. Replace `<MSG_ID>` in the prompts
+below with actual IDs.
 
 ---
 
@@ -20,7 +22,8 @@ Save a few message IDs from the response. Replace `<MSG_ID>` in the prompts belo
 What MCP tools are available that start with "gerbidigm_gmail"? List them with their descriptions.
 ```
 
-**Expected:** Should show `gerbidigm_gmail_fetchFlexible` and `gerbidigm_gmail_batchFetchFlexible`
+**Expected:** Should show `gerbidigm_gmail_fetchFlexible` and
+`gerbidigm_gmail_batchFetchFlexible`
 
 ---
 
@@ -51,11 +54,13 @@ Show me what labels this message has.
 ## Test 4: Batch Fetch Comparison
 
 First, get 5 message IDs:
+
 ```
 Search Gmail for "is:inbox" and give me exactly 5 message IDs as a JSON array.
 ```
 
 Then use batch fetch:
+
 ```
 Use gerbidigm_gmail_batchFetchFlexible to fetch those 5 message IDs with:
 - format: "metadata"
@@ -189,12 +194,14 @@ Use the batch fetch tool for efficiency!
 ## What to Look For
 
 ✅ **Working correctly:**
+
 - Tools execute without errors
 - Response contains requested data only
 - Batch operations process multiple messages
 - Field masks reduce response size
 
 ❌ **Potential issues:**
+
 - "Tool not found" → Rebuild and restart Claude Desktop
 - "Invalid credentials" → Re-authenticate with auth-utils.js
 - "Invalid field mask" → Check syntax (no spaces, use commas and slashes)

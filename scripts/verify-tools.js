@@ -113,7 +113,9 @@ serverProcess.on('close', (code) => {
     console.log('\n📝 Expected tools:');
     console.log('   • gerbidigm_echo (or gerbidigm.echo)');
     console.log('   • gerbidigm_anotherTool (or gerbidigm.anotherTool)');
-    console.log('   • gerbidigm_gmail_fetchFlexible (or gerbidigm.gmail.fetchFlexible)');
+    console.log(
+      '   • gerbidigm_gmail_fetchFlexible (or gerbidigm.gmail.fetchFlexible)',
+    );
     console.log(
       '   • gerbidigm_gmail_batchFetchFlexible (or gerbidigm.gmail.batchFetchFlexible)',
     );
@@ -122,7 +124,9 @@ serverProcess.on('close', (code) => {
     console.log('\n📖 Next steps:');
     console.log('   1. Restart Claude Desktop to load the new tools');
     console.log('   2. See skills/gerbidigm/TEST_PROMPTS.md for test prompts');
-    console.log('   3. See skills/gerbidigm/TESTING.md for detailed test scenarios');
+    console.log(
+      '   3. See skills/gerbidigm/TESTING.md for detailed test scenarios',
+    );
     process.exit(0);
   } else {
     console.log('❌ Tool registration message not found');

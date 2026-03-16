@@ -5,6 +5,7 @@ Complete overview of the Google Workspace + Gerbidigm Claude Code plugin.
 ## What Was Created
 
 A fully functional Claude Code plugin with three deployment options:
+
 1. **Plugin installation** (recommended for users)
 2. **Project-scoped .mcp.json** (for development)
 3. **Claude Desktop config** (for Desktop app)
@@ -33,6 +34,7 @@ claude plugins install ./claude-plugin
 ```
 
 **Benefits:**
+
 - ✅ Managed by Claude Code plugin system
 - ✅ Version tracking
 - ✅ Easy updates
@@ -40,6 +42,7 @@ claude plugins install ./claude-plugin
 - ✅ Uses `${CLAUDE_PLUGIN_ROOT}` for portability
 
 **Test:**
+
 ```bash
 claude plugins list
 claude
@@ -56,6 +59,7 @@ claude
 ```
 
 **Benefits:**
+
 - ✅ Automatic configuration
 - ✅ Team sharing via git
 - ✅ No installation needed
@@ -63,7 +67,8 @@ claude
 
 ### Option 3: Claude Desktop
 
-Use the existing config at `~/Library/Application Support/Claude/claude_desktop_config.json`:
+Use the existing config at
+`~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 ```json
 {
@@ -79,6 +84,7 @@ Use the existing config at `~/Library/Application Support/Claude/claude_desktop_
 ```
 
 **Benefits:**
+
 - ✅ Works with Claude Desktop app
 - ✅ System-wide configuration
 - ✅ Already configured
@@ -88,6 +94,7 @@ Use the existing config at `~/Library/Application Support/Claude/claude_desktop_
 ### Core Capabilities
 
 **100+ Google Workspace Tools:**
+
 - Gmail (send, search, read, label, drafts)
 - Google Docs (create, read, update)
 - Google Sheets (data manipulation)
@@ -116,7 +123,8 @@ Use the existing config at `~/Library/Application Support/Claude/claude_desktop_
    - Better discoverability than upstream
 
 4-5. **`gerbidigm_echo`, `gerbidigm_anotherTool`**
-   - Example tools for development
+
+- Example tools for development
 
 ## Documentation Structure
 
@@ -147,6 +155,7 @@ Use the existing config at `~/Library/Application Support/Claude/claude_desktop_
 ### For Plugin Users
 
 See [claude-plugin/INSTALL.md](claude-plugin/INSTALL.md):
+
 1. Prerequisites check
 2. Build and authenticate
 3. Install plugin
@@ -156,6 +165,7 @@ See [claude-plugin/INSTALL.md](claude-plugin/INSTALL.md):
 ### For Developers
 
 See [skills/gerbidigm/QUICK_START.md](skills/gerbidigm/QUICK_START.md):
+
 1. Build project
 2. Verify tools
 3. Start testing
@@ -163,7 +173,9 @@ See [skills/gerbidigm/QUICK_START.md](skills/gerbidigm/QUICK_START.md):
 
 ### For Claude Code CLI
 
-See [skills/gerbidigm/CLAUDE_CODE_SETUP.md](skills/gerbidigm/CLAUDE_CODE_SETUP.md):
+See
+[skills/gerbidigm/CLAUDE_CODE_SETUP.md](skills/gerbidigm/CLAUDE_CODE_SETUP.md):
+
 1. One-command setup
 2. Quick test
 3. Verification steps
@@ -176,7 +188,9 @@ See [skills/gerbidigm/CLAUDE_CODE_SETUP.md](skills/gerbidigm/CLAUDE_CODE_SETUP.m
 
 ### Comprehensive Tests
 
-[skills/gerbidigm/TESTING.md](skills/gerbidigm/TESTING.md) - 10 detailed scenarios:
+[skills/gerbidigm/TESTING.md](skills/gerbidigm/TESTING.md) - 10 detailed
+scenarios:
+
 1. Verify tools available
 2. Fetch metadata only
 3. Minimal format with field mask
@@ -190,11 +204,14 @@ See [skills/gerbidigm/CLAUDE_CODE_SETUP.md](skills/gerbidigm/CLAUDE_CODE_SETUP.m
 
 ### Copy-Paste Prompts
 
-[skills/gerbidigm/TEST_PROMPTS.md](skills/gerbidigm/TEST_PROMPTS.md) - Ready to use
+[skills/gerbidigm/TEST_PROMPTS.md](skills/gerbidigm/TEST_PROMPTS.md) - Ready to
+use
 
 ## Skill Documentation
 
-[skills/gerbidigm/gmail-fetch.md](skills/gerbidigm/gmail-fetch.md) - Complete guide:
+[skills/gerbidigm/gmail-fetch.md](skills/gerbidigm/gmail-fetch.md) - Complete
+guide:
+
 - When to use each format
 - Field mask syntax and patterns
 - 10+ real-world examples
@@ -212,6 +229,7 @@ node scripts/verify-tools.js
 ```
 
 Expected output:
+
 ```
 ✅ Gerbidigm tools registered: 5
 ✅ Server started successfully
@@ -237,11 +255,16 @@ Should show `google-workspace` as **connected**.
 ## File Inventory
 
 ### Implementation Files
-- `workspace-server/src/gerbidigm/services/FlexibleGmailService.ts` - Gmail fetch service
-- `workspace-server/src/gerbidigm/register-tools.ts` - Tool registration (updated)
-- `workspace-server/src/gerbidigm/services/ExampleCustomService.ts` - Example service
+
+- `workspace-server/src/gerbidigm/services/FlexibleGmailService.ts` - Gmail
+  fetch service
+- `workspace-server/src/gerbidigm/register-tools.ts` - Tool registration
+  (updated)
+- `workspace-server/src/gerbidigm/services/ExampleCustomService.ts` - Example
+  service
 
 ### Plugin Files
+
 - `claude-plugin/.claude-plugin/plugin.json` - Plugin manifest
 - `claude-plugin/.mcp.json` - MCP server config
 - `claude-plugin/README.md` - Plugin documentation (300 lines)
@@ -250,11 +273,14 @@ Should show `google-workspace` as **connected**.
 - `claude-plugin/skills/` - Symlink to skills
 
 ### Configuration Files
+
 - `.mcp.json` - Project-scoped MCP config
 - `~/.claude/settings.json` - User settings (existing)
-- `~/Library/Application Support/Claude/claude_desktop_config.json` - Desktop config (existing)
+- `~/Library/Application Support/Claude/claude_desktop_config.json` - Desktop
+  config (existing)
 
 ### Documentation Files
+
 - `docs/CLAUDE_CODE_CLI.md` - CLI guide (400 lines)
 - `skills/gerbidigm/gmail-fetch.md` - Skill guide (300 lines)
 - `skills/gerbidigm/TESTING.md` - Test scenarios (400 lines)
@@ -264,6 +290,7 @@ Should show `google-workspace` as **connected**.
 - `skills/gerbidigm/README.md` - Skills overview (100 lines)
 
 ### Utility Files
+
 - `scripts/verify-tools.js` - Tool verification script
 
 ## Distribution Options
@@ -271,6 +298,7 @@ Should show `google-workspace` as **connected**.
 ### Option 1: Git Clone + Install
 
 Users clone the repo and install:
+
 ```bash
 git clone https://github.com/gerbidigm/workspace
 cd workspace
@@ -282,6 +310,7 @@ claude plugins install ./claude-plugin
 ### Option 2: Packaged Plugin
 
 Create a distributable package:
+
 ```bash
 cd workspace
 npm run build
@@ -289,6 +318,7 @@ tar -czf google-workspace-gerbidigm-plugin.tar.gz claude-plugin/ workspace-serve
 ```
 
 Users extract and install:
+
 ```bash
 tar -xzf google-workspace-gerbidigm-plugin.tar.gz
 claude plugins install ./claude-plugin
@@ -297,6 +327,7 @@ claude plugins install ./claude-plugin
 ### Option 3: Plugin Marketplace
 
 Submit to Claude Code plugin marketplace (future):
+
 - Follow marketplace submission guidelines
 - Update version in `plugin.json`
 - Provide release notes
@@ -306,6 +337,7 @@ Submit to Claude Code plugin marketplace (future):
 ### Updating the Plugin
 
 After code changes:
+
 ```bash
 # 1. Make changes to services
 # 2. Update version in claude-plugin/.claude-plugin/plugin.json
@@ -323,6 +355,7 @@ claude plugins install ./claude-plugin
 ### Version Numbering
 
 Semantic versioning (semver):
+
 - **0.1.0** - Initial release (current)
 - **0.2.0** - New features
 - **0.x.y** - Bug fixes
@@ -331,42 +364,49 @@ Semantic versioning (semver):
 ## Support Resources
 
 ### Documentation
+
 - [claude-plugin/README.md](claude-plugin/README.md) - Plugin overview
 - [claude-plugin/INSTALL.md](claude-plugin/INSTALL.md) - Installation
-- [skills/gerbidigm/gmail-fetch.md](skills/gerbidigm/gmail-fetch.md) - Usage guide
+- [skills/gerbidigm/gmail-fetch.md](skills/gerbidigm/gmail-fetch.md) - Usage
+  guide
 
 ### Testing
+
 - [claude-plugin/TESTING.md](claude-plugin/TESTING.md) - Quick tests
-- [skills/gerbidigm/TESTING.md](skills/gerbidigm/TESTING.md) - Comprehensive tests
+- [skills/gerbidigm/TESTING.md](skills/gerbidigm/TESTING.md) - Comprehensive
+  tests
 
 ### Tools
+
 - `scripts/verify-tools.js` - Verification
 - `scripts/auth-utils.js` - Authentication management
 
 ### Issues
+
 - GitHub Issues: https://github.com/gerbidigm/workspace/issues
 
 ## Next Steps
 
 1. **Test the plugin:**
+
    ```bash
    claude plugins install ./claude-plugin
    claude
    ```
 
 2. **Run verification:**
+
    ```bash
    node scripts/verify-tools.js
    ```
 
-3. **Try test prompts:**
-   See [skills/gerbidigm/TEST_PROMPTS.md](skills/gerbidigm/TEST_PROMPTS.md)
+3. **Try test prompts:** See
+   [skills/gerbidigm/TEST_PROMPTS.md](skills/gerbidigm/TEST_PROMPTS.md)
 
-4. **Read skills:**
-   See [skills/gerbidigm/gmail-fetch.md](skills/gerbidigm/gmail-fetch.md)
+4. **Read skills:** See
+   [skills/gerbidigm/gmail-fetch.md](skills/gerbidigm/gmail-fetch.md)
 
-5. **Commit everything:**
-   Ready to commit all changes to the feature branch
+5. **Commit everything:** Ready to commit all changes to the feature branch
 
 ## Summary Statistics
 

@@ -65,9 +65,9 @@ Test with a simple image:
 ```typescript
 await gerbidigm.gemini.describeImage({
   image: {
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cat03.jpg/1200px-Cat03.jpg"
+    url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cat03.jpg/1200px-Cat03.jpg',
   },
-  prompt: "What animal is this?"
+  prompt: 'What animal is this?',
 });
 ```
 
@@ -132,6 +132,7 @@ See `.mcp.json` in project root or `claude-plugin/` directory.
 **Problem:** GEMINI_API_KEY environment variable not set.
 
 **Solution:**
+
 1. Set the environment variable (see above)
 2. Restart your terminal/shell
 3. Restart the MCP server (Gemini CLI or Claude Code)
@@ -142,6 +143,7 @@ See `.mcp.json` in project root or `claude-plugin/` directory.
 **Problem:** Image URL not accessible.
 
 **Solutions:**
+
 - Verify the contentUri is correct
 - Google Docs images may require authentication
 - Try downloading the image and passing as base64:
@@ -154,8 +156,8 @@ const base64 = Buffer.from(buffer).toString('base64');
 await gerbidigm.gemini.describeImage({
   image: {
     base64: base64,
-    mimeType: "image/jpeg"
-  }
+    mimeType: 'image/jpeg',
+  },
 });
 ```
 
@@ -164,6 +166,7 @@ await gerbidigm.gemini.describeImage({
 **Problem:** Hitting Gemini API rate limits.
 
 **Solutions:**
+
 - Free tier: 15 requests/min, 1M tokens/day
 - Use smaller batches (5-10 images)
 - Add delays between batches
@@ -174,6 +177,7 @@ await gerbidigm.gemini.describeImage({
 **Problem:** TypeScript compilation errors.
 
 **Solution:**
+
 ```bash
 # Clean and rebuild
 npm run clean
@@ -186,11 +190,13 @@ npm run build
 ### Free Tier Limits
 
 Gemini API free tier includes:
+
 - 15 requests per minute
 - 1 million tokens per day
 - 1,500 requests per day
 
 This is sufficient for:
+
 - ~3,870 images/day with Flash
 - Development and testing
 - Small-scale production use
@@ -198,6 +204,7 @@ This is sufficient for:
 ### Paid Tier
 
 For production use with higher volume:
+
 - 360 requests/minute
 - No daily token limits
 - ~$0.0002 per image (Flash)

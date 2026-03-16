@@ -19,6 +19,7 @@ claude plugins list
 ```
 
 You should see:
+
 ```
 google-workspace-gerbidigm  v0.1.0
 ```
@@ -26,16 +27,19 @@ google-workspace-gerbidigm  v0.1.0
 ### 3. Check Server Connection
 
 Start Claude Code:
+
 ```bash
 claude
 ```
 
 Check MCP status:
+
 ```
 /mcp
 ```
 
 Expected output:
+
 - `google-workspace` server listed
 - Status: **connected**
 
@@ -48,6 +52,7 @@ What gerbidigm tools are available?
 ```
 
 **Expected:** Should list 5 gerbidigm tools:
+
 - `gerbidigm_gmail_fetchFlexible`
 - `gerbidigm_gmail_batchFetchFlexible`
 - `gerbidigm_searchDirectory`
@@ -119,20 +124,25 @@ Which was faster and returned less data?
 ## Comprehensive Test Prompts
 
 For more detailed testing, see:
-- [skills/gerbidigm/TEST_PROMPTS.md](skills/gerbidigm/TEST_PROMPTS.md) - Copy-paste prompts
-- [skills/gerbidigm/TESTING.md](skills/gerbidigm/TESTING.md) - 10 detailed scenarios
+
+- [skills/gerbidigm/TEST_PROMPTS.md](skills/gerbidigm/TEST_PROMPTS.md) -
+  Copy-paste prompts
+- [skills/gerbidigm/TESTING.md](skills/gerbidigm/TESTING.md) - 10 detailed
+  scenarios
 
 ## Troubleshooting
 
 ### Plugin Not Loading
 
 **Check installation:**
+
 ```bash
 claude plugins list
 claude plugins get google-workspace-gerbidigm
 ```
 
 **Reinstall:**
+
 ```bash
 claude plugins remove google-workspace-gerbidigm
 cd /path/to/workspace
@@ -143,6 +153,7 @@ claude plugins install ./claude-plugin
 ### Server Not Connected
 
 **Check MCP status:**
+
 ```
 /mcp
 ```
@@ -150,18 +161,21 @@ claude plugins install ./claude-plugin
 If `google-workspace` shows as disconnected:
 
 1. **Verify build:**
+
    ```bash
    npm run build
    node scripts/verify-tools.js
    ```
 
 2. **Check authentication:**
+
    ```bash
    node scripts/auth-utils.js status
    node scripts/auth-utils.js login  # if needed
    ```
 
 3. **Check plugin path:**
+
    ```bash
    claude plugins get google-workspace-gerbidigm
    ```
@@ -177,11 +191,13 @@ If `google-workspace` shows as disconnected:
 ### Authentication Issues
 
 **Re-authenticate:**
+
 ```bash
 node scripts/auth-utils.js login
 ```
 
 **Check status:**
+
 ```bash
 node scripts/auth-utils.js status
 ```
@@ -189,11 +205,13 @@ node scripts/auth-utils.js status
 ### Tools Not Appearing
 
 1. **Rebuild the server:**
+
    ```bash
    npm run build
    ```
 
 2. **Verify registration:**
+
    ```bash
    node scripts/verify-tools.js
    ```
@@ -205,6 +223,7 @@ node scripts/auth-utils.js status
    In Claude Code, the MCP server logs to stderr. Enable debug mode:
 
    Edit `claude-plugin/.mcp.json`:
+
    ```json
    {
      "google-workspace": {
@@ -221,7 +240,8 @@ node scripts/auth-utils.js status
 
 ### Path Issues
 
-The plugin uses `${CLAUDE_PLUGIN_ROOT}` to reference files. If you see path errors:
+The plugin uses `${CLAUDE_PLUGIN_ROOT}` to reference files. If you see path
+errors:
 
 1. Check the plugin is installed (not just symlinked)
 2. Ensure the workspace directory structure is intact
@@ -229,20 +249,19 @@ The plugin uses `${CLAUDE_PLUGIN_ROOT}` to reference files. If you see path erro
 
 ## Test Success Criteria
 
-✅ Plugin appears in `claude plugins list`
-✅ MCP server shows as "connected" in `/mcp`
-✅ All 5 gerbidigm tools are listed
-✅ Can search Gmail successfully
-✅ Flexible fetch tools work with different formats
-✅ Batch fetch processes multiple messages
-✅ Standard Google Workspace tools (calendar, drive) work
+✅ Plugin appears in `claude plugins list` ✅ MCP server shows as "connected" in
+`/mcp` ✅ All 5 gerbidigm tools are listed ✅ Can search Gmail successfully ✅
+Flexible fetch tools work with different formats ✅ Batch fetch processes
+multiple messages ✅ Standard Google Workspace tools (calendar, drive) work
 
 ## Next Steps
 
 Once basic tests pass:
 
-1. **Explore skills** - See [skills/gerbidigm/](skills/gerbidigm/) for detailed guides
-2. **Test scenarios** - Try all 10 scenarios in [TESTING.md](skills/gerbidigm/TESTING.md)
+1. **Explore skills** - See [skills/gerbidigm/](skills/gerbidigm/) for detailed
+   guides
+2. **Test scenarios** - Try all 10 scenarios in
+   [TESTING.md](skills/gerbidigm/TESTING.md)
 3. **Real workflows** - Use for actual email triage, document management, etc.
 
 ## Getting Help

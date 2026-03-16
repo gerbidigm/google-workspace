@@ -4,7 +4,9 @@ This is the **only** change needed in `workspace-server/src/index.ts`.
 
 ## Location
 
-Add these 3 lines after all upstream tool registrations, right before the server connects to the transport (around line 1373, just before the comment `// 4. Connect the transport layer...`).
+Add these 3 lines after all upstream tool registrations, right before the server
+connects to the transport (around line 1373, just before the comment
+`// 4. Connect the transport layer...`).
 
 ## The Patch
 
@@ -29,23 +31,29 @@ await server.connect(transport);
 The 4th parameter passes upstream service instances for creating wrapper tools:
 
 ```typescript
-{ peopleService }  // Currently passed
+{
+  peopleService;
+} // Currently passed
 ```
 
 To add more services, update this object:
 
 ```typescript
-{ peopleService, driveService, gmailService }
+{
+  (peopleService, driveService, gmailService);
+}
 ```
 
-This allows custom tools to wrap/leverage existing implementations without duplication.
+This allows custom tools to wrap/leverage existing implementations without
+duplication.
 
 ## Why This Works
 
 1. **Minimal surface area**: Only 3 lines to maintain during merges
 2. **Clear markers**: `GERBIDIGM PATCH START/END` comments make it obvious
 3. **Dynamic import**: Uses ESM `import()` so TypeScript compilation is happy
-4. **All dependencies passed**: `server`, `authManager`, and options are provided
+4. **All dependencies passed**: `server`, `authManager`, and options are
+   provided
 5. **Before connection**: Tools must be registered before `server.connect()`
 
 ## Merge Strategy

@@ -67,9 +67,7 @@ export class GeminiService {
       const arrayBuffer = await response.arrayBuffer();
       const base64 = Buffer.from(arrayBuffer).toString('base64');
       const inferredMimeType =
-        mimeType ||
-        response.headers.get('content-type') ||
-        'image/jpeg';
+        mimeType || response.headers.get('content-type') || 'image/jpeg';
 
       return {
         inlineData: {
@@ -278,9 +276,7 @@ export class GeminiService {
           model,
         }));
 
-        logToFile(
-          `[GeminiService] Described ${images.length} images in batch`,
-        );
+        logToFile(`[GeminiService] Described ${images.length} images in batch`);
       }
 
       const successCount = results.filter((r) => !r.error).length;

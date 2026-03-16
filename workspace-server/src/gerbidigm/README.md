@@ -1,6 +1,7 @@
 # Gerbidigm Custom Tools
 
-This directory contains custom MCP tools that are isolated from upstream changes.
+This directory contains custom MCP tools that are isolated from upstream
+changes.
 
 ## Architecture
 
@@ -19,8 +20,14 @@ The **only** change to upstream `index.ts` is a 3-line import and call:
 
 ```typescript
 // GERBIDIGM PATCH: Register custom tools
-const { registerGerbidigmTools } = await import('./gerbidigm/register-tools.js');
-await registerGerbidigmTools(server, authManager, { separator, readOnlyToolProps }, { peopleService });
+const { registerGerbidigmTools } =
+  await import('./gerbidigm/register-tools.js');
+await registerGerbidigmTools(
+  server,
+  authManager,
+  { separator, readOnlyToolProps },
+  { peopleService },
+);
 ```
 
 The 4th parameter passes upstream service instances for creating wrapper tools.
@@ -92,7 +99,8 @@ if (services?.peopleService) {
       inputSchema: { query: z.string() },
       ...readOnlyToolProps,
     },
-    async ({ query }) => services.peopleService!.getUserProfile({ name: query })
+    async ({ query }) =>
+      services.peopleService!.getUserProfile({ name: query }),
   );
 }
 ```

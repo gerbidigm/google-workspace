@@ -1,6 +1,7 @@
 # Using Google Workspace MCP with Claude Code CLI
 
-This guide explains how to use the Google Workspace MCP server (including Gerbidigm custom tools) with Claude Code CLI.
+This guide explains how to use the Google Workspace MCP server (including
+Gerbidigm custom tools) with Claude Code CLI.
 
 ## Quick Setup
 
@@ -14,7 +15,8 @@ claude mcp add --transport stdio --scope project google-workspace -- \
   node workspace-server/dist/index.js
 ```
 
-This creates a `.mcp.json` file in the project root that's shared with anyone using the repository.
+This creates a `.mcp.json` file in the project root that's shared with anyone
+using the repository.
 
 ### Option 2: User-Scoped
 
@@ -35,9 +37,7 @@ Create `.mcp.json` in the project root:
     "google-workspace": {
       "type": "stdio",
       "command": "node",
-      "args": [
-        "workspace-server/dist/index.js"
-      ]
+      "args": ["workspace-server/dist/index.js"]
     }
   }
 }
@@ -76,10 +76,7 @@ Or in `.mcp.json`:
     "google-workspace": {
       "type": "stdio",
       "command": "node",
-      "args": [
-        "workspace-server/dist/index.js",
-        "--debug"
-      ]
+      "args": ["workspace-server/dist/index.js", "--debug"]
     }
   }
 }
@@ -88,11 +85,13 @@ Or in `.mcp.json`:
 ## Prerequisites
 
 1. **Build the project:**
+
    ```bash
    npm run build
    ```
 
 2. **Authenticate with Google:**
+
    ```bash
    node scripts/auth-utils.js login
    ```
@@ -134,6 +133,7 @@ What gerbidigm tools are available?
 ```
 
 You should see:
+
 - `gerbidigm_echo`
 - `gerbidigm_anotherTool`
 - `gerbidigm_gmail_fetchFlexible`
@@ -172,11 +172,11 @@ claude mcp remove google-workspace
 
 Claude Code CLI supports three scopes for MCP servers:
 
-| Scope | Location | Use Case |
-|-------|----------|----------|
-| **Local** | `~/.claude.json` | Personal, project-specific (default) |
-| **Project** | `.mcp.json` | Team-shared, checked into git |
-| **User** | `~/.claude.json` | Personal, all projects |
+| Scope       | Location         | Use Case                             |
+| ----------- | ---------------- | ------------------------------------ |
+| **Local**   | `~/.claude.json` | Personal, project-specific (default) |
+| **Project** | `.mcp.json`      | Team-shared, checked into git        |
+| **User**    | `~/.claude.json` | Personal, all projects               |
 
 ### Choosing a Scope
 
@@ -195,6 +195,7 @@ In Claude Code CLI, tools use **underscore** notation (not dots):
 - `docs_create` ✅
 
 Not:
+
 - `gerbidigm.gmail.fetchFlexible` ❌ (Gemini CLI format)
 
 ## Troubleshooting
@@ -204,6 +205,7 @@ Not:
 **Error:** "MCP server 'google-workspace' not found"
 
 **Solution:**
+
 1. Check configuration: `claude mcp list`
 2. Verify path in `.mcp.json` or `~/.claude.json`
 3. Ensure server is built: `npm run build`
@@ -213,6 +215,7 @@ Not:
 **Error:** "Invalid credentials" or "Not authenticated"
 
 **Solution:**
+
 ```bash
 node scripts/auth-utils.js status
 node scripts/auth-utils.js login  # if needed
@@ -221,11 +224,13 @@ node scripts/auth-utils.js login  # if needed
 ### Server Not Starting
 
 **Check server can run manually:**
+
 ```bash
 node workspace-server/dist/index.js --debug
 ```
 
 **Common issues:**
+
 - Node version mismatch (need Node 20)
 - Missing dependencies: `npm install`
 - Path incorrect in configuration
@@ -247,10 +252,7 @@ Enable debug mode to see detailed logs:
     "google-workspace": {
       "type": "stdio",
       "command": "node",
-      "args": [
-        "workspace-server/dist/index.js",
-        "--debug"
-      ]
+      "args": ["workspace-server/dist/index.js", "--debug"]
     }
   }
 }
@@ -260,20 +262,24 @@ Enable debug mode to see detailed logs:
 
 ### Basic Test Prompts
 
-See [skills/gerbidigm/TEST_PROMPTS.md](../skills/gerbidigm/TEST_PROMPTS.md) for copy-paste test prompts.
+See [skills/gerbidigm/TEST_PROMPTS.md](../skills/gerbidigm/TEST_PROMPTS.md) for
+copy-paste test prompts.
 
 ### Test Scenarios
 
-See [skills/gerbidigm/TESTING.md](../skills/gerbidigm/TESTING.md) for 10 detailed test scenarios.
+See [skills/gerbidigm/TESTING.md](../skills/gerbidigm/TESTING.md) for 10
+detailed test scenarios.
 
 ### Quick Validation
 
 1. **Check tools are available:**
+
    ```
    What MCP tools start with "gerbidigm_gmail"?
    ```
 
 2. **Test metadata fetch:**
+
    ```
    Search Gmail for recent emails, get 5 IDs, then use
    gerbidigm_gmail_fetchFlexible to fetch one with format "metadata"
@@ -287,40 +293,41 @@ See [skills/gerbidigm/TESTING.md](../skills/gerbidigm/TESTING.md) for 10 detaile
 
 ## Differences from Claude Desktop
 
-| Feature | Claude Desktop | Claude Code CLI |
-|---------|----------------|-----------------|
-| Config file | `~/Library/Application Support/Claude/claude_desktop_config.json` | `.mcp.json` or `~/.claude.json` |
-| Tool names | `gerbidigm_gmail_fetchFlexible` | Same (underscores) |
-| Restart needed | Yes (Cmd+Q, reopen) | No (reconnects automatically) |
-| Configuration | Manual JSON editing | `claude mcp add` command |
-| Scope support | Global only | Local, Project, User |
+| Feature        | Claude Desktop                                                    | Claude Code CLI                 |
+| -------------- | ----------------------------------------------------------------- | ------------------------------- |
+| Config file    | `~/Library/Application Support/Claude/claude_desktop_config.json` | `.mcp.json` or `~/.claude.json` |
+| Tool names     | `gerbidigm_gmail_fetchFlexible`                                   | Same (underscores)              |
+| Restart needed | Yes (Cmd+Q, reopen)                                               | No (reconnects automatically)   |
+| Configuration  | Manual JSON editing                                               | `claude mcp add` command        |
+| Scope support  | Global only                                                       | Local, Project, User            |
 
 ## Project-Scoped Configuration Example
 
 If you want to commit the MCP configuration to git for team sharing:
 
 **`.mcp.json`:**
+
 ```json
 {
   "mcpServers": {
     "google-workspace": {
       "type": "stdio",
       "command": "node",
-      "args": [
-        "workspace-server/dist/index.js"
-      ]
+      "args": ["workspace-server/dist/index.js"]
     }
   }
 }
 ```
 
 **`.gitignore`:**
+
 ```
 # Don't commit local MCP overrides
 ~/.claude.json
 ```
 
 Then team members can:
+
 ```bash
 git clone <repo>
 cd workspace
@@ -332,19 +339,20 @@ claude  # MCP server auto-configured from .mcp.json
 
 ## Benefits of Using Claude Code CLI
 
-✅ **Version control** - `.mcp.json` can be committed to git
-✅ **Team sharing** - Everyone uses the same configuration
-✅ **Simpler setup** - `claude mcp add` command
-✅ **Scope control** - Local, project, or user-level
-✅ **No restart needed** - Reconnects automatically
-✅ **Built-in management** - `claude mcp list/get/remove`
+✅ **Version control** - `.mcp.json` can be committed to git ✅ **Team
+sharing** - Everyone uses the same configuration ✅ **Simpler setup** -
+`claude mcp add` command ✅ **Scope control** - Local, project, or user-level ✅
+**No restart needed** - Reconnects automatically ✅ **Built-in management** -
+`claude mcp list/get/remove`
 
 ## Next Steps
 
 1. **Configure the server** using one of the options above
 2. **Test basic functionality** with `/mcp` command
-3. **Run test prompts** from [TEST_PROMPTS.md](../skills/gerbidigm/TEST_PROMPTS.md)
-4. **Review skill guide** at [gmail-fetch.md](../skills/gerbidigm/gmail-fetch.md)
+3. **Run test prompts** from
+   [TEST_PROMPTS.md](../skills/gerbidigm/TEST_PROMPTS.md)
+4. **Review skill guide** at
+   [gmail-fetch.md](../skills/gerbidigm/gmail-fetch.md)
 
 ## Additional Resources
 

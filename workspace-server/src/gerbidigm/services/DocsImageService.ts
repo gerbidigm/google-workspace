@@ -143,9 +143,7 @@ export class DocsImageService {
             objectId,
             contentUri,
             mimeType: embeddedObject.imageProperties.contentUri
-              ? this._inferMimeType(
-                  embeddedObject.imageProperties.contentUri,
-                )
+              ? this._inferMimeType(embeddedObject.imageProperties.contentUri)
               : undefined,
             imageProperties: embeddedObject.imageProperties,
             positioning,
@@ -323,9 +321,7 @@ export class DocsImageService {
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
-      logToFile(
-        `[DocsImageService] Error during insertImage: ${errorMessage}`,
-      );
+      logToFile(`[DocsImageService] Error during insertImage: ${errorMessage}`);
       return {
         isError: true,
         content: [

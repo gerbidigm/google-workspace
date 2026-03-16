@@ -1,6 +1,7 @@
 # Google Workspace + Gerbidigm Claude Code Plugin
 
-A comprehensive Google Workspace integration for Claude Code with enhanced Gerbidigm tools for flexible Gmail operations.
+A comprehensive Google Workspace integration for Claude Code with enhanced
+Gerbidigm tools for flexible Gmail operations.
 
 ## Features
 
@@ -70,6 +71,7 @@ claude
 ```
 
 Then:
+
 ```
 /mcp
 ```
@@ -91,6 +93,7 @@ Create a draft email to john@example.com with subject "Meeting followup"
 ### Flexible Gmail Fetch
 
 **Get just metadata (fast):**
+
 ```
 Use gerbidigm_gmail_fetchFlexible to fetch message <ID> with:
 - format: "metadata"
@@ -98,12 +101,14 @@ Use gerbidigm_gmail_fetchFlexible to fetch message <ID> with:
 ```
 
 **Batch process multiple emails:**
+
 ```
 Search Gmail for unread emails, then use gerbidigm_gmail_batchFetchFlexible
 to get metadata for the first 20 efficiently
 ```
 
 **Optimize with field masks:**
+
 ```
 Use gerbidigm_gmail_fetchFlexible with format "full" and
 fields "id,snippet,payload/headers" to get just what you need
@@ -145,7 +150,8 @@ See `skills/gerbidigm/` for all available skills.
 
 ### MCP Server Config
 
-The plugin automatically configures the Google Workspace MCP server using `.mcp.json`.
+The plugin automatically configures the Google Workspace MCP server using
+`.mcp.json`.
 
 ### Authentication
 
@@ -162,6 +168,7 @@ Credentials are stored securely in the system keychain.
 Enable debug logging:
 
 Edit `claude-plugin/.mcp.json`:
+
 ```json
 {
   "google-workspace": {
@@ -196,6 +203,7 @@ All skills from `skills/gerbidigm/` are accessible:
 - **QUICK_START.md** - 5-minute getting started
 
 Reference skills in conversation:
+
 ```
 Can you show me the gmail-fetch skill for flexible email fetching?
 ```
@@ -273,7 +281,8 @@ claude
 
 ### Use Flexible Gmail Tools
 
-Standard `gmail_get` fetches complete messages. Use Gerbidigm flexible tools instead:
+Standard `gmail_get` fetches complete messages. Use Gerbidigm flexible tools
+instead:
 
 - **Metadata only**: 5-10x smaller response, 3-5x faster
 - **Batch operations**: 20-50x faster than individual fetches
@@ -287,16 +296,19 @@ See `skills/gerbidigm/gmail-fetch.md` for detailed patterns.
 
 - Never use with untrusted inputs
 - Be cautious processing emails/documents from unknown sources
-- Review the [security warning](../README.md#important-security-consideration-indirect-prompt-injection-risk)
+- Review the
+  [security warning](../README.md#important-security-consideration-indirect-prompt-injection-risk)
 
 ## API Quotas
 
 Google APIs have rate limits:
+
 - Gmail: 250 quota units/second per user
 - Drive: 12,000 requests/minute
 - Calendar: 1,000,000 queries/day
 
 Flexible fetch tools help stay within limits through:
+
 - Reduced bandwidth with field masks
 - Batch operations (fewer API calls)
 - Format optimization

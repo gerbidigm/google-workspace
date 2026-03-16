@@ -1,6 +1,7 @@
 # Testing Gerbidigm Gmail Flexible Fetch Tools
 
-This guide walks through testing the new flexible Gmail fetch tools using Claude Desktop or Claude CLI.
+This guide walks through testing the new flexible Gmail fetch tools using Claude
+Desktop or Claude CLI.
 
 ## Prerequisites
 
@@ -12,7 +13,8 @@ npm run build
 
 ### 2. Configure Claude Desktop
 
-The MCP server should already be configured in `~/Library/Application Support/Claude/claude_desktop_config.json`:
+The MCP server should already be configured in
+`~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 ```json
 {
@@ -42,16 +44,19 @@ Or use the standard OAuth flow when the server first requests access.
 ### 4. Restart Claude Desktop
 
 After building, restart Claude Desktop to load the new tools:
+
 - Quit Claude Desktop completely (Cmd+Q)
 - Reopen Claude Desktop
 
 ## Tool Names
 
 In Claude Desktop (using underscores):
+
 - `gerbidigm_gmail_fetchFlexible`
 - `gerbidigm_gmail_batchFetchFlexible`
 
 In Gemini CLI (using dots):
+
 - `gerbidigm.gmail.fetchFlexible`
 - `gerbidigm.gmail.batchFetchFlexible`
 
@@ -60,6 +65,7 @@ In Gemini CLI (using dots):
 ### Test 1: Verify Tools Are Available
 
 **Prompt:**
+
 ```
 What gerbidigm Gmail tools are available?
 ```
@@ -70,9 +76,11 @@ What gerbidigm Gmail tools are available?
 
 ### Test 2: Fetch Metadata Only
 
-**Scenario:** Get sender, subject, and date without fetching the full email body.
+**Scenario:** Get sender, subject, and date without fetching the full email
+body.
 
 **Prompt:**
+
 ```
 Use gerbidigm_gmail_fetchFlexible to fetch message ID <YOUR_MESSAGE_ID>
 with format "metadata" and metadataHeaders ["From", "Subject", "Date"]
@@ -81,16 +89,19 @@ with format "metadata" and metadataHeaders ["From", "Subject", "Date"]
 **Replace** `<YOUR_MESSAGE_ID>` with an actual Gmail message ID from your inbox.
 
 **To get a message ID first, run:**
+
 ```
 Search my Gmail for recent emails and show me a few message IDs
 ```
 
 **Expected Output:**
+
 - JSON with id, threadId, payload with only requested headers
 - No body content
 - Fast response
 
 **Verify:**
+
 - Response is smaller than a full fetch
 - Only requested headers are present
 
@@ -101,12 +112,14 @@ Search my Gmail for recent emails and show me a few message IDs
 **Scenario:** Get just the ID and labels of a message (fastest possible fetch).
 
 **Prompt:**
+
 ```
 Use gerbidigm_gmail_fetchFlexible to fetch message <MESSAGE_ID>
 with format "minimal" and fields "id,labelIds"
 ```
 
 **Expected Output:**
+
 ```json
 {
   "id": "...",
@@ -115,6 +128,7 @@ with format "minimal" and fields "id,labelIds"
 ```
 
 **Verify:**
+
 - Response contains only id and labelIds
 - Very fast response time
 
@@ -125,18 +139,21 @@ with format "minimal" and fields "id,labelIds"
 **Scenario:** Get complete email including body and attachments.
 
 **Prompt:**
+
 ```
 Use gerbidigm_gmail_fetchFlexible to fetch message <MESSAGE_ID>
 with format "full"
 ```
 
 **Expected Output:**
+
 - Complete message structure
 - Headers in payload
 - Body parts
 - Attachment metadata (if any)
 
 **Verify:**
+
 - Full email content is present
 - Can read the email body
 - Attachment info included (if email has attachments)
@@ -148,11 +165,13 @@ with format "full"
 **Scenario:** Get metadata for multiple emails efficiently.
 
 **First, get some message IDs:**
+
 ```
 Search Gmail for recent emails (last 5) and give me their message IDs
 ```
 
 **Then use batch fetch:**
+
 ```
 Use gerbidigm_gmail_batchFetchFlexible to fetch these message IDs:
 [<ID1>, <ID2>, <ID3>]
@@ -160,6 +179,7 @@ with format "metadata" and metadataHeaders ["From", "Subject", "Date"]
 ```
 
 **Expected Output:**
+
 ```json
 {
   "summary": {
@@ -168,14 +188,21 @@ with format "metadata" and metadataHeaders ["From", "Subject", "Date"]
     "failed": 0
   },
   "messages": [
-    { /* message 1 data */ },
-    { /* message 2 data */ },
-    { /* message 3 data */ }
+    {
+      /* message 1 data */
+    },
+    {
+      /* message 2 data */
+    },
+    {
+      /* message 3 data */
+    }
   ]
 }
 ```
 
 **Verify:**
+
 - All messages fetched in one call
 - Summary shows correct counts
 - Messages array has all data
@@ -187,16 +214,19 @@ with format "metadata" and metadataHeaders ["From", "Subject", "Date"]
 **Scenario:** Fetch multiple messages but only need snippet and labels.
 
 **Prompt:**
+
 ```
 Use gerbidigm_gmail_batchFetchFlexible with these IDs: [<ID1>, <ID2>]
 format "metadata", and fields "id,threadId,snippet,labelIds"
 ```
 
 **Expected Output:**
+
 - Each message has only: id, threadId, snippet, labelIds
 - No payload or other fields
 
 **Verify:**
+
 - Response is much smaller than full fetch
 - Only specified fields present
 
@@ -207,12 +237,14 @@ format "metadata", and fields "id,threadId,snippet,labelIds"
 **Scenario:** Try to fetch a non-existent message.
 
 **Prompt:**
+
 ```
 Use gerbidigm_gmail_fetchFlexible to fetch message "INVALID_MESSAGE_ID"
 with format "metadata"
 ```
 
 **Expected Output:**
+
 ```json
 {
   "error": "Requested entity was not found."
@@ -220,6 +252,7 @@ with format "metadata"
 ```
 
 **Verify:**
+
 - Error is returned gracefully
 - Error message is clear
 
@@ -230,6 +263,7 @@ with format "metadata"
 **Scenario:** Batch fetch with mix of valid and invalid IDs.
 
 **Prompt:**
+
 ```
 Use gerbidigm_gmail_batchFetchFlexible with messageIds:
 ["VALID_ID", "INVALID_ID", "ANOTHER_VALID_ID"]
@@ -237,6 +271,7 @@ format "minimal"
 ```
 
 **Expected Output:**
+
 ```json
 {
   "summary": {
@@ -244,7 +279,9 @@ format "minimal"
     "successful": 2,
     "failed": 1
   },
-  "messages": [ /* valid messages */ ],
+  "messages": [
+    /* valid messages */
+  ],
   "errors": [
     {
       "messageId": "INVALID_ID",
@@ -256,6 +293,7 @@ format "minimal"
 ```
 
 **Verify:**
+
 - Successful messages are returned
 - Failed messages are listed in errors
 - Summary counts are correct
@@ -267,17 +305,20 @@ format "minimal"
 **Scenario:** Compare performance and output size.
 
 **First, use standard tool:**
+
 ```
 Use gmail_get to fetch message <MESSAGE_ID> with format "full"
 ```
 
 **Then, use flexible tool with field mask:**
+
 ```
 Use gerbidigm_gmail_fetchFlexible to fetch the same message
 with format "full" and fields "id,threadId,snippet,payload/headers"
 ```
 
 **Compare:**
+
 - Response size (flexible should be smaller)
 - Speed (flexible should be faster)
 - Data returned (flexible has only requested fields)
@@ -289,6 +330,7 @@ with format "full" and fields "id,threadId,snippet,payload/headers"
 **Scenario:** Build an email summary dashboard.
 
 **Prompt:**
+
 ```
 Help me triage my inbox:
 1. Search for unread emails
@@ -297,14 +339,15 @@ Help me triage my inbox:
 3. Summarize them in a table
 ```
 
-**Expected:**
-Claude should:
+**Expected:** Claude should:
+
 1. Search Gmail with `is:unread`
 2. Extract message IDs
 3. Batch fetch with metadata format
 4. Create a formatted summary table
 
 **Verify:**
+
 - Process is efficient (one batch fetch)
 - Table shows key info
 - Faster than fetching full emails
@@ -315,14 +358,14 @@ Claude should:
 
 For reference, here are expected performance characteristics:
 
-| Operation | Format | Field Mask | Approx Response Size |
-|-----------|--------|------------|---------------------|
-| Single fetch | minimal | id,labelIds | ~200 bytes |
-| Single fetch | metadata | default | ~5-10 KB |
-| Single fetch | metadata | specific headers | ~2-5 KB |
-| Single fetch | full | none | ~50-500 KB+ |
-| Single fetch | full | headers only | ~10-20 KB |
-| Batch fetch (10) | metadata | specific headers | ~20-50 KB |
+| Operation        | Format   | Field Mask       | Approx Response Size |
+| ---------------- | -------- | ---------------- | -------------------- |
+| Single fetch     | minimal  | id,labelIds      | ~200 bytes           |
+| Single fetch     | metadata | default          | ~5-10 KB             |
+| Single fetch     | metadata | specific headers | ~2-5 KB              |
+| Single fetch     | full     | none             | ~50-500 KB+          |
+| Single fetch     | full     | headers only     | ~10-20 KB            |
+| Batch fetch (10) | metadata | specific headers | ~20-50 KB            |
 
 **Note:** Actual sizes vary based on email content, number of headers, etc.
 
@@ -331,7 +374,8 @@ For reference, here are expected performance characteristics:
 ### Tools Not Appearing
 
 1. **Verify build:** `npm run build` completed successfully
-2. **Check server is running:** Look for "Registered X Gerbidigm custom tools" in logs
+2. **Check server is running:** Look for "Registered X Gerbidigm custom tools"
+   in logs
 3. **Restart Claude Desktop:** Fully quit and reopen
 4. **Check config:** Verify path in `claude_desktop_config.json`
 
@@ -348,12 +392,14 @@ node scripts/auth-utils.js login
 ### Server Not Starting
 
 **Check logs:**
+
 ```bash
 # On macOS, Claude Desktop logs are in:
 tail -f ~/Library/Logs/Claude/mcp*.log
 ```
 
 **Common issues:**
+
 - Node version mismatch (need Node 20)
 - Missing dependencies (run `npm install`)
 - Path to dist/index.js incorrect
@@ -361,13 +407,16 @@ tail -f ~/Library/Logs/Claude/mcp*.log
 ### Tools Return Errors
 
 **"Invalid credentials"**
+
 - Run `node scripts/auth-utils.js login` to re-authenticate
 
 **"Tool not found"**
+
 - Verify tool name matches your client (underscores for Claude, dots for Gemini)
 - Rebuild the project
 
 **"Invalid field mask"**
+
 - Check field mask syntax (no spaces, use slashes for nesting)
 - Example: `"id,threadId,payload/headers"`
 
@@ -393,7 +442,8 @@ Start the MCP server with debug flag:
 
 ### Check Server Output
 
-The server logs to stderr, which Claude Desktop captures. You can also run it manually:
+The server logs to stderr, which Claude Desktop captures. You can also run it
+manually:
 
 ```bash
 node workspace-server/dist/index.js --debug
@@ -404,6 +454,7 @@ Then interact via JSON-RPC over stdio (advanced).
 ### Verify Tool Registration
 
 Look for this in the server output:
+
 ```
 Registered 4 Gerbidigm custom tools.
 ```
@@ -439,15 +490,19 @@ Use gerbidigm_gmail_batchFetchFlexible with 100 message IDs
 ### Field Mask Variations
 
 Test different field mask patterns:
+
 - `"*"` (all fields)
 - `"payload/*"` (all payload fields)
 - `"id,threadId,payload(headers,body)"` (nested selection)
 
-See [Gmail API partial response docs](https://developers.google.com/gmail/api/guides/performance#partial-response) for advanced syntax.
+See
+[Gmail API partial response docs](https://developers.google.com/gmail/api/guides/performance#partial-response)
+for advanced syntax.
 
 ## Feedback
 
 If you encounter issues or have suggestions:
+
 1. Check troubleshooting section above
 2. Review server logs for errors
 3. Verify your test scenario matches the examples

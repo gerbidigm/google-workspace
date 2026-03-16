@@ -87,7 +87,11 @@ export class FlexibleGmailService {
       }
 
       // Add metadataHeaders if format is metadata
-      if (format === 'metadata' && metadataHeaders && metadataHeaders.length > 0) {
+      if (
+        format === 'metadata' &&
+        metadataHeaders &&
+        metadataHeaders.length > 0
+      ) {
         requestParams.metadataHeaders = metadataHeaders;
       }
 
@@ -153,7 +157,9 @@ export class FlexibleGmailService {
             {
               type: 'text' as const,
               text: JSON.stringify({
-                error: 'Too many message IDs. Maximum is 100, got ' + messageIds.length,
+                error:
+                  'Too many message IDs. Maximum is 100, got ' +
+                  messageIds.length,
               }),
             },
           ],
@@ -179,7 +185,11 @@ export class FlexibleGmailService {
             requestParams.fields = fields;
           }
 
-          if (format === 'metadata' && metadataHeaders && metadataHeaders.length > 0) {
+          if (
+            format === 'metadata' &&
+            metadataHeaders &&
+            metadataHeaders.length > 0
+          ) {
             requestParams.metadataHeaders = metadataHeaders;
           }
 
@@ -190,7 +200,8 @@ export class FlexibleGmailService {
             data: response.data,
           };
         } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : String(error);
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
           logToFile(`Error fetching message ${messageId}: ${errorMessage}`);
           return {
             messageId,
