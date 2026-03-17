@@ -230,3 +230,10 @@ if (services?.peopleService) {
 - **Clear markers**: `GERBIDIGM PATCH START/END` comments in `index.ts`
 - **Easy testing**: Custom tools can be tested independently
 - **Wrapper support**: Can enhance upstream tools without modifying them
+
+### Making Pull Requests
+
+**IMPORTANT:** Do not ever attempt to make upstream pull requests. All work
+should never leave the gerbidigm/google-workspace project. You can create pull
+requests within the gerbidigm/google-workspace repository for changes to custom
+tools, but upstream contributions are not allowed.
