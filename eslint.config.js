@@ -117,4 +117,28 @@ module.exports = [
       'import/enforce-node-protocol-usage': ['error', 'always'],
     },
   },
+  {
+    // Gerbidigm custom tools are copyright Charlie Voiselle, not Google LLC
+    files: ['workspace-server/src/gerbidigm/**/*.{ts,js}'],
+    plugins: { headers },
+    rules: {
+      'headers/header-format': [
+        'error',
+        {
+          source: 'string',
+          content: [
+            '@license',
+            'Copyright (year) Charlie Voiselle',
+            'SPDX-License-Identifier: Apache-2.0',
+          ].join('\n'),
+          patterns: {
+            year: {
+              pattern: '202[5-6]',
+              defaultValue: '2026',
+            },
+          },
+        },
+      ],
+    },
+  },
 ];

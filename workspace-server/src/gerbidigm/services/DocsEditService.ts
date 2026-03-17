@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * Copyright 2026 Charlie Voiselle
  * SPDX-License-Identifier: Apache-2.0
  */
 
