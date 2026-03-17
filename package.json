@@ -24,6 +24,7 @@
     "format:check": "prettier --check .",
     "format:fix": "prettier --write .",
     "release": "node scripts/release.js",
+    "release:claude-plugin": "node scripts/release-claude-plugin.js",
     "release:dev": "npm install && npm run build && node scripts/release.js",
     "set-version": "node scripts/set-version.js",
     "version": "node scripts/set-version.js && git add workspace-server/package.json",
