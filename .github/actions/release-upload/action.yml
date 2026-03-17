@@ -1,0 +1,58 @@
+name: Release Upload
+description: >
+  Creates a GitHub Release if it does not already exist, then uploads one or
+  more asset files to it. Uses the gh CLI (pre-installed on all GitHub-hosted
+  runners) so there is no Node.js action runtime dependency.
+
+inputs:
+  tag_name:
+    description: >
+      The release tag to create/upload to. Defaults to the tag that triggered
+      the workflow (github.ref_name).
+    required: false
+    default: ${{ github.ref_name }}
+  name:
+    description: >
+      Display name for the release. Defaults to the tag name if not set.
+    required: false
+    default: ''
+  files:
+    description: >
+      Glob pattern or space-separated list of files to upload as release assets.
+    required: true
+  prerelease:
+    description: Mark the release as a pre-release if it is created.
+    required: false
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - name: Create release if absent
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        PRERELEASE_FLAG=""
+        if [ "${{ inputs.prerelease }}" = "true" ]; then
+          PRERELEASE_FLAG="--prerelease"
+        fi
+        NAME_FLAG=""
+        if [ -n "${{ inputs.name }}" ]; then
+          NAME_FLAG="--title ${{ inputs.name }}"
+        fi
+        gh release create "${{ inputs.tag_name }}" \
+          --repo "${{ github.repository }}" \
+          $PRERELEASE_FLAG \
+          $NAME_FLAG \
+          2>/dev/null || true
+
+    - name: Upload assets
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        gh release upload "${{ inputs.tag_name }}" \
+          --repo "${{ github.repository }}" \
+          --clobber \
+          ${{ inputs.files }}

@@ -16,21 +16,8 @@ jobs:
         id: date
         run: echo "tag_name=preview-$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
-  create-release:
-    needs: prepare
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ needs.prepare.outputs.tag_name }}
-          name: Weekly Preview ${{ needs.prepare.outputs.tag_name }}
-          prerelease: true
-
   release-gemini:
-    needs: [prepare, create-release]
+    needs: prepare
     name: Gemini Extension (${{ matrix.platform }})
     strategy:
       matrix:
@@ -69,13 +56,15 @@ jobs:
         run: npm run release -- --platform=${{ matrix.platform }}
 
       - name: Upload Gemini release asset
-        uses: softprops/action-gh-release@v2
+        uses: ./.github/actions/release-upload
         with:
           tag_name: ${{ needs.prepare.outputs.tag_name }}
+          name: Weekly Preview ${{ needs.prepare.outputs.tag_name }}
+          prerelease: 'true'
           files: release/${{ matrix.platform }}.google-workspace-extension.tar.gz
 
   release-claude-plugin:
-    needs: [prepare, create-release]
+    needs: prepare
     name: Claude Plugin (${{ matrix.platform }})
     strategy:
       matrix:
@@ -114,7 +103,9 @@ jobs:
         run: node scripts/release-claude-plugin.js --platform=${{ matrix.platform }}
 
       - name: Upload Claude plugin release asset
-        uses: softprops/action-gh-release@v2
+        uses: ./.github/actions/release-upload
         with:
           tag_name: ${{ needs.prepare.outputs.tag_name }}
+          name: Weekly Preview ${{ needs.prepare.outputs.tag_name }}
+          prerelease: 'true'
           files: release/${{ matrix.platform }}.google-workspace-claude-plugin.tar.gz
