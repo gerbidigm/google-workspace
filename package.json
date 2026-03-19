@@ -24,6 +24,7 @@
     "format:check": "prettier --check .",
     "format:fix": "prettier --write .",
     "release": "node scripts/release.js",
+    "release:claude-plugin": "node scripts/release-claude-plugin.js",
     "release:dev": "npm install && npm run build && node scripts/release.js",
     "set-version": "node scripts/set-version.js",
     "version": "node scripts/set-version.js && git add workspace-server/package.json",
@@ -34,6 +35,7 @@
   "dependencies": {
     "@google-apps/chat": "^0.23.0",
     "@google-cloud/local-auth": "^3.0.1",
+    "@google/generative-ai": "^0.21.0",
     "@googleapis/docs": "^9.2.1",
     "@googleapis/drive": "^20.1.0",
     "@modelcontextprotocol/sdk": "^1.27.1",

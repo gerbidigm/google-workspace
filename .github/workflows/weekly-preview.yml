@@ -8,6 +8,7 @@ on:
 
 jobs:
   prepare:
+    if: false # GERBIDIGM PATCH: replaced by gerbidigm-weekly-preview.yml
     runs-on: ubuntu-latest
     outputs:
       tag_name: ${{ steps.date.outputs.tag_name }}
@@ -17,6 +18,7 @@ jobs:
         run: echo "tag_name=preview-$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
   create-release:
+    if: false # GERBIDIGM PATCH: replaced by gerbidigm-weekly-preview.yml
     needs: prepare
     runs-on: ubuntu-latest
     permissions:
@@ -30,6 +32,7 @@ jobs:
           prerelease: true
 
   release:
+    if: false # GERBIDIGM PATCH: replaced by gerbidigm-weekly-preview.yml
     needs: [prepare, create-release]
     name: Build and Release
     strategy:

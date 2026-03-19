@@ -8,6 +8,9 @@ const tseslint = require('@typescript-eslint/eslint-plugin');
 const tsParser = require('@typescript-eslint/parser');
 const headers = require('eslint-plugin-headers');
 const importPlugin = require('eslint-plugin-import');
+// GERBIDIGM PATCH START
+const gerbidigmConfig = require('./workspace-server/src/gerbidigm/eslint.config.gerbidigm.js');
+// GERBIDIGM PATCH END
 
 module.exports = [
   {
@@ -117,4 +120,7 @@ module.exports = [
       'import/enforce-node-protocol-usage': ['error', 'always'],
     },
   },
+  // GERBIDIGM PATCH START
+  ...gerbidigmConfig,
+  // GERBIDIGM PATCH END
 ];

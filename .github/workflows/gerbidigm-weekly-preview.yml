@@ -1,0 +1,111 @@
+name: Gerbidigm Weekly Preview Release
+
+on:
+  schedule:
+    # Every Monday at 09:00 UTC — mirrors upstream weekly-preview.yml schedule
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      tag_name: ${{ steps.date.outputs.tag_name }}
+    steps:
+      - name: Get current date
+        id: date
+        run: echo "tag_name=preview-$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+  release-gemini:
+    needs: prepare
+    name: Gemini Extension (${{ matrix.platform }})
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+          - os: macos-latest
+            platform: darwin
+          - os: windows-latest
+            platform: win32
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build extension
+        run: npm run build --workspace=workspace-server
+
+      - name: Create Gemini release asset
+        shell: bash
+        env:
+          GITHUB_REF_NAME: ${{ needs.prepare.outputs.tag_name }}
+        run: npm run release -- --platform=${{ matrix.platform }}
+
+      - name: Upload Gemini release asset
+        uses: ./.github/actions/release-upload
+        with:
+          tag_name: ${{ needs.prepare.outputs.tag_name }}
+          name: Weekly Preview ${{ needs.prepare.outputs.tag_name }}
+          prerelease: 'true'
+          files: release/${{ matrix.platform }}.google-workspace-extension.tar.gz
+
+  release-claude-plugin:
+    needs: prepare
+    name: Claude Plugin (${{ matrix.platform }})
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+          - os: macos-latest
+            platform: darwin
+          - os: windows-latest
+            platform: win32
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build extension
+        run: npm run build --workspace=workspace-server
+
+      - name: Create Claude plugin release asset
+        shell: bash
+        env:
+          GITHUB_REF_NAME: ${{ needs.prepare.outputs.tag_name }}
+        run: node scripts/release-claude-plugin.js --platform=${{ matrix.platform }}
+
+      - name: Upload Claude plugin release asset
+        uses: ./.github/actions/release-upload
+        with:
+          tag_name: ${{ needs.prepare.outputs.tag_name }}
+          name: Weekly Preview ${{ needs.prepare.outputs.tag_name }}
+          prerelease: 'true'
+          files: release/${{ matrix.platform }}.google-workspace-claude-plugin.tar.gz
