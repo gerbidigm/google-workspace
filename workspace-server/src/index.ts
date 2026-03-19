@@ -1315,6 +1315,16 @@ System labels that can be modified:
     peopleService.getUserRelations,
   );
 
+  // GERBIDIGM PATCH: Register custom tools
+  const { registerGerbidigmTools } =
+    await import('./gerbidigm/register-tools.js');
+  await registerGerbidigmTools(
+    server,
+    authManager,
+    { separator, readOnlyToolProps },
+    { peopleService },
+  );
+
   // 4. Connect the transport layer and start listening
   const transport = new StdioServerTransport();
   await server.connect(transport);
