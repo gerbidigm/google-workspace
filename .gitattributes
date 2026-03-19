@@ -1,0 +1,4 @@
+# package-lock.json: never attempt a three-way merge.
+# The take-upstream-lockfile driver accepts upstream's version as-is
+# during rebase; the post-rebase hook regenerates it with npm install.
+package-lock.json merge=take-upstream-lockfile
