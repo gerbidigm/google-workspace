@@ -940,8 +940,8 @@ await gerbidigm.docs.insertImage({
 
 **Symptom:** Image appears in wrong location
 
-**Solution:** Use createWithImages for predictable placement, or read document
-first to calculate index
+**Solution:** Use createWithImages for predictable placement, or call
+`docs.getStructure` first to see element indices and pick the right position
 
 ## Advanced Patterns
 
@@ -1009,13 +1009,21 @@ await gerbidigm.docs.createWithImages({
 // To "replace" an image, insert new one and document the old location
 // Google Docs API doesn't have direct image replacement, so:
 
-// Option A: Insert at same position
+// Option A: Insert new image, then delete old one by index
+// Images occupy exactly 1 character in the document index.
+// Use getStructure to find the old image's index first.
 await gerbidigm.docs.insertImage({
   documentId: '1ABC...',
   driveFileId: newImageId,
-  position: 42, // Same index as old image
+  position: 42, // Index of the old image
 });
-// Now manually delete old image in UI
+// Old image is now at index 43 (shifted by the insertion).
+// Delete it:
+await gerbidigm.docs.deleteRange({
+  documentId: '1ABC...',
+  startIndex: 43,
+  endIndex: 44, // images are 1 character wide
+});
 
 // Option B: Create new doc with updated images
 // Better for automated workflows

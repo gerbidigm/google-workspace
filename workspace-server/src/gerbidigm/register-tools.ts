@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * Copyright 2026 Charlie Voiselle
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -13,6 +13,7 @@ import { FlexibleGmailService } from './services/FlexibleGmailService';
 import { DocsImageService } from './services/DocsImageService';
 import { GeminiService } from './services/GeminiService';
 import { DriveUploadService } from './services/DriveUploadService';
+import { DocsEditService } from './services/DocsEditService';
 
 /**
  * Registration options passed from main index.ts
@@ -60,6 +61,7 @@ export async function registerGerbidigmTools(
   const docsImageService = new DocsImageService(authManager);
   const geminiService = new GeminiService();
   const driveUploadService = new DriveUploadService(authManager);
+  const docsEditService = new DocsEditService(authManager);
 
   // Register custom tools with a 'gerbidigm' prefix to avoid conflicts
   // Tool names will be normalized to 'gerbidigm_echo' or 'gerbidigm.echo'
@@ -321,6 +323,35 @@ export async function registerGerbidigmTools(
     driveUploadService.uploadImage,
   );
 
+  // Drive copy tool
+  server.registerTool(
+    `gerbidigm${separator}drive${separator}copyFile`,
+    {
+      description:
+        'Copy any file in Google Drive, including Google Docs, Sheets, and Slides. Returns the new file ID and web link. Use this to create a safe test copy before making destructive edits.',
+      inputSchema: {
+        fileId: z
+          .string()
+          .describe(
+            'The Drive file ID to copy. For Google Docs, this is the document ID from the URL.',
+          ),
+        name: z
+          .string()
+          .optional()
+          .describe(
+            'Name for the copy. Defaults to "Copy of <original name>".',
+          ),
+        folderId: z
+          .string()
+          .optional()
+          .describe(
+            'Drive folder ID to place the copy in. Defaults to the same folder as the original.',
+          ),
+      },
+    },
+    driveUploadService.copyFile,
+  );
+
   // Docs insert image tool
   server.registerTool(
     `gerbidigm${separator}docs${separator}insertImage`,
@@ -413,9 +444,150 @@ export async function registerGerbidigmTools(
     docsImageService.createWithImages,
   );
 
+  // Docs structural read + edit tools
+  server.registerTool(
+    `gerbidigm${separator}docs${separator}getStructure`,
+    {
+      description:
+        'Get the structure of a Google Doc with start/end indices for every element. Supports filters to keep responses small: elementTypes limits to specific block types, namedStyles filters paragraphs by style (e.g. headings only), fromIndex/toIndex scopes to a known section, and includeRuns=false strips per-run detail. Use this BEFORE index-based edits when findTextRange is not sufficient.',
+      inputSchema: {
+        documentId: z
+          .string()
+          .describe(
+            'The Google Doc ID or URL. Can be a full URL or just the document ID.',
+          ),
+        tabId: z
+          .string()
+          .optional()
+          .describe(
+            'Optional tab ID to limit results to a single tab. If omitted, all tabs are returned.',
+          ),
+        elementTypes: z
+          .array(
+            z.enum(['paragraph', 'table', 'sectionBreak', 'tableOfContents']),
+          )
+          .optional()
+          .describe(
+            'Only return elements of these types. E.g. ["paragraph"] to exclude tables and breaks.',
+          ),
+        namedStyles: z
+          .array(z.string())
+          .optional()
+          .describe(
+            'Only return paragraphs with these named styles. E.g. ["HEADING_1","HEADING_2","HEADING_3"] for an outline. Possible values: NORMAL_TEXT, TITLE, SUBTITLE, HEADING_1 through HEADING_6. Non-paragraph elements are unaffected by this filter.',
+          ),
+        fromIndex: z
+          .number()
+          .int()
+          .optional()
+          .describe(
+            'Only return elements whose endIndex > fromIndex. Use with toIndex to scope to a known section.',
+          ),
+        toIndex: z
+          .number()
+          .int()
+          .optional()
+          .describe(
+            'Only return elements whose startIndex < toIndex. Use with fromIndex to scope to a known section.',
+          ),
+        includeRuns: z
+          .boolean()
+          .optional()
+          .default(true)
+          .describe(
+            'Include per-run detail (startIndex, endIndex, text) within each paragraph. Set to false to reduce response size when you only need paragraph-level indices and text.',
+          ),
+      },
+      ...readOnlyToolProps,
+    },
+    docsEditService.getStructure,
+  );
+
+  server.registerTool(
+    `gerbidigm${separator}docs${separator}deleteRange`,
+    {
+      description:
+        "Delete a range of content from a Google Doc using start and end indices. The range is [startIndex, endIndex) — endIndex is exclusive. ANCHOR WARNING: If the paragraph immediately after your target has hasLeadingAnchor:true (visible in getStructure output), deleting that paragraph's preceding \\n terminator will be rejected by the API — use endIndex-1 to clear the text content only and leave the empty paragraph. For paragraphs without an anchored successor, use the full startIndex and endIndex to delete the entire paragraph. Do NOT use docs.replaceText with an empty string — use this tool instead.",
+      inputSchema: {
+        documentId: z
+          .string()
+          .describe('The Google Doc ID or URL to delete content from.'),
+        startIndex: z
+          .number()
+          .int()
+          .min(1)
+          .describe(
+            'Start index of the range to delete (inclusive, >= 1). Obtain from docs.getStructure.',
+          ),
+        endIndex: z
+          .number()
+          .int()
+          .describe(
+            'End index of the range to delete (exclusive, > startIndex). Obtain from docs.getStructure.',
+          ),
+        tabId: z
+          .string()
+          .optional()
+          .describe(
+            'Optional tab ID if targeting a specific tab in a multi-tab document.',
+          ),
+      },
+    },
+    docsEditService.deleteRange,
+  );
+
+  server.registerTool(
+    `gerbidigm${separator}docs${separator}findTextRange`,
+    {
+      description:
+        'Find all occurrences of a text string in a Google Doc and return their absolute start/end indices. Results are sorted end-of-document first so indices stay valid if you delete them in order. Use this to locate content before calling deleteRange (single match) or deleteRanges (all matches). Includes a context snippet around each match for confirmation.',
+      inputSchema: {
+        documentId: z.string().describe('The Google Doc ID or URL to search.'),
+        text: z.string().describe('The exact text to search for.'),
+        tabId: z
+          .string()
+          .optional()
+          .describe('Optional tab ID to restrict search to a specific tab.'),
+        caseSensitive: z
+          .boolean()
+          .optional()
+          .default(false)
+          .describe('Whether the search is case-sensitive. Defaults to false.'),
+      },
+      ...readOnlyToolProps,
+    },
+    docsEditService.findTextRange,
+  );
+
+  server.registerTool(
+    `gerbidigm${separator}docs${separator}deleteRanges`,
+    {
+      description:
+        'Delete multiple content ranges from a Google Doc in a single operation. Pass the matches array from docs.findTextRange directly — ranges are sorted end-of-document first internally so no index adjustment is needed. Overlapping ranges are rejected with an error. Prefer this over calling deleteRange in a loop.',
+      inputSchema: {
+        documentId: z
+          .string()
+          .describe('The Google Doc ID or URL to delete content from.'),
+        ranges: z
+          .array(
+            z.object({
+              startIndex: z.number().int().min(1),
+              endIndex: z.number().int(),
+              tabId: z.string().optional(),
+            }),
+          )
+          .min(1)
+          .describe(
+            'Array of ranges to delete. Each range is [startIndex, endIndex). Obtain from docs.findTextRange or docs.getStructure.',
+          ),
+      },
+    },
+    docsEditService.deleteRanges,
+  );
+
   // Add more tool registrations here as you build them
   // server.registerTool(`gerbidigm${separator}yourTool`, {...}, yourService.yourMethod);
 
-  const toolCount = 10 + (services?.peopleService ? 1 : 0);
+  const toolCount = 15 + (services?.peopleService ? 1 : 0);
   console.error(`Registered ${toolCount} Gerbidigm custom tools.`);
 }
