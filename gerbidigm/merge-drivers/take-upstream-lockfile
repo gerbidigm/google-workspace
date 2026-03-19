@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Merge driver for package-lock.json.
+#
+# During 'git rebase upstream/main', git's internal merge treats the onto
+# branch (upstream) as "ours" (%A) and the commit being replayed as
+# "theirs" (%B). We always want upstream's lockfile as the base, so we
+# accept %A as-is and exit 0.
+#
+# The post-rebase hook then runs 'npm install --package-lock-only' to
+# layer back any gerbidigm package.json additions on top.
+#
+# Arguments (set via gitconfig merge driver definition):
+#   %O = ancestor version   (not used)
+#   %A = ours (upstream)    <- this is what git uses as the result
+#   %B = theirs (gerbidigm) (not used)
+#
+# NOTE: this driver is designed for 'git rebase'. If you use
+# 'git merge upstream/main' instead, ours/theirs are reversed and you
+# would need to copy %B to %A. The policy for this repo is rebase-only
+# for upstream syncs.
+
+exit 0
