@@ -18,6 +18,9 @@ async function build() {
       outfile: 'dist/index.js',
       minify: true,
       sourcemap: true,
+      define: {
+        BUILD_TIME: JSON.stringify(new Date().toISOString()),
+      },
       // Replace 'open' package with our wrapper
       alias: {
         open: path.resolve(__dirname, 'src/utils/open-wrapper.ts'),
