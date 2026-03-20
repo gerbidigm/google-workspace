@@ -16,6 +16,7 @@ import { DriveUploadService } from './services/DriveUploadService';
 import { DocsEditService } from './services/DocsEditService';
 import { GmailService } from '../services/GmailService';
 import { GmailLabelService } from './services/GmailLabelService';
+import { DocsMarkdownService } from './services/DocsMarkdownService';
 import { buildTime } from './buildInfo';
 
 /**
@@ -67,6 +68,7 @@ export async function registerGerbidigmTools(
   const docsEditService = new DocsEditService(authManager);
   const gmailService = new GmailService(authManager);
   const gmailLabelService = new GmailLabelService(authManager);
+  const docsMarkdownService = new DocsMarkdownService(authManager);
 
   // Register custom tools with a 'gerbidigm' prefix to avoid conflicts
   // Tool names will be normalized to 'gerbidigm_echo' or 'gerbidigm.echo'
@@ -701,6 +703,39 @@ export async function registerGerbidigmTools(
     (args) => gmailLabelService.createLabelPath(args),
   );
 
+  // Docs markdown insertion tool
+  server.registerTool(
+    `gerbidigm${separator}docs${separator}insertMarkdown`,
+    {
+      description:
+        'Insert markdown content into a Google Doc at a specific index, converting it to ' +
+        'native Docs formatting in a single batchUpdate. ' +
+        'Supported syntax: headings (# h1 – ###### h6), paragraphs, ' +
+        'unordered lists (- item or * item), ordered lists (1. item), ' +
+        'nested lists (indent 2 spaces per level), ' +
+        'inline **bold**, *italic*, ***bold italic***, and `code`. ' +
+        'Use docs.getStructure to find the insertion index, or pass index="end" to append.',
+      inputSchema: {
+        documentId: z
+          .string()
+          .describe('Google Doc ID or URL.'),
+        markdown: z
+          .string()
+          .describe('Markdown content to insert.'),
+        index: z
+          .union([z.number().int().min(1), z.literal('end')])
+          .describe(
+            'Document index to insert at (from docs.getStructure), or "end" to append.',
+          ),
+        tabId: z
+          .string()
+          .optional()
+          .describe('Tab ID for multi-tab documents.'),
+      },
+    },
+    docsMarkdownService.insertMarkdown,
+  );
+
   server.registerTool(
     `gerbidigm${separator}buildInfo`,
     {
@@ -722,6 +757,6 @@ export async function registerGerbidigmTools(
   // Add more tool registrations here as you build them
   // server.registerTool(`gerbidigm${separator}yourTool`, {...}, yourService.yourMethod);
 
-  const toolCount = 21 + (services?.peopleService ? 1 : 0);
+  const toolCount = 22 + (services?.peopleService ? 1 : 0);
   console.error(`Registered ${toolCount} Gerbidigm custom tools.`);
 }
