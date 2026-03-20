@@ -14,6 +14,9 @@ import { DocsImageService } from './services/DocsImageService';
 import { GeminiService } from './services/GeminiService';
 import { DriveUploadService } from './services/DriveUploadService';
 import { DocsEditService } from './services/DocsEditService';
+import { GmailService } from '../services/GmailService';
+import { GmailLabelService } from './services/GmailLabelService';
+import { buildTime } from './buildInfo';
 
 /**
  * Registration options passed from main index.ts
@@ -62,6 +65,8 @@ export async function registerGerbidigmTools(
   const geminiService = new GeminiService();
   const driveUploadService = new DriveUploadService(authManager);
   const docsEditService = new DocsEditService(authManager);
+  const gmailService = new GmailService(authManager);
+  const gmailLabelService = new GmailLabelService(authManager);
 
   // Register custom tools with a 'gerbidigm' prefix to avoid conflicts
   // Tool names will be normalized to 'gerbidigm_echo' or 'gerbidigm.echo'
@@ -585,9 +590,138 @@ export async function registerGerbidigmTools(
     docsEditService.deleteRanges,
   );
 
+  // Gmail bulk convenience tools
+  server.registerTool(
+    `gerbidigm${separator}gmail${separator}bulkMarkRead`,
+    {
+      description:
+        'Remove the UNREAD label from one or more messages. Accepts 1–1000 message IDs.',
+      inputSchema: {
+        messageIds: z
+          .array(z.string())
+          .min(1)
+          .max(1000)
+          .describe('Message IDs to mark as read.'),
+      },
+    },
+    ({ messageIds }) =>
+      gmailService.batchModify({ messageIds, removeLabelIds: ['UNREAD'] }),
+  );
+
+  server.registerTool(
+    `gerbidigm${separator}gmail${separator}bulkMarkUnread`,
+    {
+      description:
+        'Add the UNREAD label to one or more messages. Accepts 1–1000 message IDs.',
+      inputSchema: {
+        messageIds: z
+          .array(z.string())
+          .min(1)
+          .max(1000)
+          .describe('Message IDs to mark as unread.'),
+      },
+    },
+    ({ messageIds }) =>
+      gmailService.batchModify({ messageIds, addLabelIds: ['UNREAD'] }),
+  );
+
+  server.registerTool(
+    `gerbidigm${separator}gmail${separator}bulkToInbox`,
+    {
+      description:
+        'Add the INBOX label to one or more messages, making them appear in the inbox view. ' +
+        'Gmail is label-based — this does not move or copy; messages can carry multiple labels simultaneously. ' +
+        'Accepts 1–1000 message IDs.',
+      inputSchema: {
+        messageIds: z
+          .array(z.string())
+          .min(1)
+          .max(1000)
+          .describe('Message IDs to add the INBOX label to.'),
+      },
+    },
+    ({ messageIds }) =>
+      gmailService.batchModify({ messageIds, addLabelIds: ['INBOX'] }),
+  );
+
+  server.registerTool(
+    `gerbidigm${separator}gmail${separator}bulkTrash`,
+    {
+      description:
+        'Add the TRASH label and remove the INBOX label from one or more messages. ' +
+        'Gmail is label-based — "archiving" is simply removing INBOX; trashing adds TRASH and removes INBOX. ' +
+        'Messages are not deleted. Accepts 1–1000 message IDs.',
+      inputSchema: {
+        messageIds: z
+          .array(z.string())
+          .min(1)
+          .max(1000)
+          .describe('Message IDs to add TRASH and remove INBOX from.'),
+      },
+    },
+    ({ messageIds }) =>
+      gmailService.batchModify({
+        messageIds,
+        addLabelIds: ['TRASH'],
+        removeLabelIds: ['INBOX'],
+      }),
+  );
+
+  server.registerTool(
+    `gerbidigm${separator}gmail${separator}createLabelPath`,
+    {
+      description:
+        'Create a Gmail label path, creating any missing ancestor labels automatically (like mkdir -p). ' +
+        'Pass the full path using a delimiter (default "/"). ' +
+        'Example: path="Digested/Digested-2026-03-19" ensures "Digested" exists then creates "Digested/Digested-2026-03-19". ' +
+        'Already-existing segments are skipped. Returns the leaf label ID and a per-segment created/skipped report. ' +
+        'Use this instead of gmail.createLabel for any nested label creation.',
+      inputSchema: {
+        path: z
+          .string()
+          .describe(
+            'Full label path to create, e.g. "Digested/Digested-2026-03-19".',
+          ),
+        delimiter: z
+          .string()
+          .optional()
+          .describe('Segment separator. Defaults to "/".'),
+        labelListVisibility: z
+          .enum(['labelShow', 'labelShowIfUnread', 'labelHide'])
+          .optional()
+          .describe(
+            'Applied to any newly created segments. Defaults to labelShow.',
+          ),
+        messageListVisibility: z
+          .enum(['show', 'hide'])
+          .optional()
+          .describe('Applied to any newly created segments. Defaults to show.'),
+      },
+    },
+    (args) => gmailLabelService.createLabelPath(args),
+  );
+
+  server.registerTool(
+    `gerbidigm${separator}buildInfo`,
+    {
+      description:
+        'Returns the build timestamp of the currently running MCP server binary. ' +
+        'Use this to confirm the server has been restarted after a rebuild.',
+      inputSchema: {},
+    },
+    () => ({
+      content: [
+        {
+          type: 'text' as const,
+          text: JSON.stringify({ buildTime }, null, 2),
+        },
+      ],
+    }),
+  );
+
   // Add more tool registrations here as you build them
   // server.registerTool(`gerbidigm${separator}yourTool`, {...}, yourService.yourMethod);
 
-  const toolCount = 15 + (services?.peopleService ? 1 : 0);
+  const toolCount = 21 + (services?.peopleService ? 1 : 0);
   console.error(`Registered ${toolCount} Gerbidigm custom tools.`);
 }
