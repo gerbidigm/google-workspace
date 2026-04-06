@@ -723,9 +723,9 @@ export async function registerGerbidigmTools(
           .string()
           .describe('Markdown content to insert.'),
         index: z
-          .union([z.number().int().min(1), z.literal('end')])
+          .union([z.coerce.number().int().min(1), z.literal('end')])
           .describe(
-            'Document index to insert at (from docs.getStructure), or "end" to append.',
+            'Document index to insert at (from docs.getStructure), or "end" to append. Pass 1 to insert at the beginning.',
           ),
         tabId: z
           .string()
