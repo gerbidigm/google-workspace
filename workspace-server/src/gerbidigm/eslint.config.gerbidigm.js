@@ -15,7 +15,10 @@ const headers = require('eslint-plugin-headers');
 module.exports = [
   {
     // Gerbidigm custom tools are copyright Charlie Voiselle, not Google LLC.
-    files: ['workspace-server/src/gerbidigm/**/*.{ts,js}'],
+    files: [
+      'workspace-server/src/gerbidigm/**/*.{ts,js}',
+      'scripts/release-dxt.js',
+    ],
     plugins: { headers },
     rules: {
       'headers/header-format': [

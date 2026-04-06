@@ -1,0 +1,51 @@
+{
+  "manifest_version": "0.3",
+  "name": "google-workspace-gerbidigm",
+  "display_name": "Google Workspace (Gerbidigm)",
+  "version": "0.1.0",
+  "description": "Google Workspace MCP integration with Gerbidigm enhancements. Manage Gmail, Docs, Sheets, Slides, Drive, Calendar, Chat, and People API — including bulk Gmail operations, markdown-to-Docs conversion, and flexible fetch with field masks.",
+  "long_description": "A Model Context Protocol server for Google Workspace, extended with Gerbidigm productivity tools.\n\n**Included services:**\n- **Gmail** — search, read, send, label, batch-modify, bulk mark-read/unread/trash/inbox, flexible fetch with field masks\n- **Google Docs** — read, write, format, insert markdown, manage images, structural editing\n- **Google Drive** — search, upload, copy, move, trash, manage folders\n- **Google Calendar** — list, create, update, delete events, find free time\n- **Google Sheets** — read ranges and metadata\n- **Google Slides** — read text, metadata, and thumbnails\n- **Google Chat** — list spaces, send messages and DMs\n- **People API** — look up contacts and directory\n\nAuthentication uses Google OAuth 2.0. On first use, open the `auth` tool to complete the browser-based sign-in flow. Tokens are stored securely in `~/.google-workspace-mcp/`.",
+  "author": {
+    "name": "Gerbidigm",
+    "url": "https://github.com/gerbidigm"
+  },
+  "repository": "https://github.com/gerbidigm/google-workspace",
+  "homepage": "https://github.com/gerbidigm/google-workspace",
+  "license": "Apache-2.0",
+  "keywords": [
+    "google",
+    "workspace",
+    "gmail",
+    "docs",
+    "sheets",
+    "slides",
+    "drive",
+    "calendar",
+    "chat",
+    "mcp",
+    "gerbidigm"
+  ],
+  "server": {
+    "type": "node",
+    "entry_point": "dist/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/dist/index.js"],
+      "env": {
+        "GEMINI_API_KEY": "${user_config.gemini_api_key}"
+      }
+    }
+  },
+  "user_config": {
+    "gemini_api_key": {
+      "type": "string",
+      "title": "Gemini API Key",
+      "description": "Optional. Required only for the gerbidigm.gemini.describeImage and describeImageBatch tools. Leave blank if you do not need AI-powered image description.",
+      "required": false,
+      "sensitive": true
+    }
+  },
+  "compatibility": {
+    "platforms": ["darwin", "win32", "linux"]
+  }
+}
