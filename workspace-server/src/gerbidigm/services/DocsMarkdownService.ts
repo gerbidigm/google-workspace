@@ -37,7 +37,7 @@ interface ParagraphBlock {
 }
 
 interface ListItem {
-  depth: number;   // 0 = top-level; each level adds one \t in the inserted text
+  depth: number; // 0 = top-level; each level adds one \t in the inserted text
   ordered: boolean;
   spans: InlineSpan[];
 }
@@ -190,10 +190,7 @@ function parseMarkdown(markdown: string): Block[] {
 // batchUpdate request builder
 // ---------------------------------------------------------------------------
 
-function makeLocation(
-  index: number,
-  tabId?: string,
-): docs_v1.Schema$Location {
+function makeLocation(index: number, tabId?: string): docs_v1.Schema$Location {
   return tabId ? { index, tabId } : { index };
 }
 
@@ -202,9 +199,7 @@ function makeRange(
   endIndex: number,
   tabId?: string,
 ): docs_v1.Schema$Range {
-  return tabId
-    ? { startIndex, endIndex, tabId }
-    : { startIndex, endIndex };
+  return tabId ? { startIndex, endIndex, tabId } : { startIndex, endIndex };
 }
 
 /**
@@ -419,9 +414,7 @@ export class DocsMarkdownService {
   /** Recursively flatten nested tabs into a single array. */
   private flattenTabs(tabs: docs_v1.Schema$Tab[]): docs_v1.Schema$Tab[] {
     return tabs.flatMap((tab) => {
-      const children = tab.childTabs
-        ? this.flattenTabs(tab.childTabs)
-        : [];
+      const children = tab.childTabs ? this.flattenTabs(tab.childTabs) : [];
       return [tab, ...children];
     });
   }
@@ -502,7 +495,7 @@ export class DocsMarkdownService {
       // Count characters that will be inserted (excluding style requests).
       const charsInserted = requests
         .filter((r) => r.insertText?.text)
-        .reduce((sum, r) => sum + (r.insertText!.text!.length), 0);
+        .reduce((sum, r) => sum + r.insertText!.text!.length, 0);
 
       await docs.documents.batchUpdate({
         documentId,

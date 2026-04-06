@@ -30,7 +30,11 @@ export class GmailLabelService {
       content: [
         {
           type: 'text' as const,
-          text: JSON.stringify({ error: `${context} failed: ${message}` }, null, 2),
+          text: JSON.stringify(
+            { error: `${context} failed: ${message}` },
+            null,
+            2,
+          ),
         },
       ],
     };
