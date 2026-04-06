@@ -349,27 +349,41 @@ function blocksToRequests(
           },
         });
 
+        requests.push({
+          updateParagraphStyle: {
+            range: makeRange(subStart, subStart + raw.length, tabId),
+            paragraphStyle: { namedStyleType: 'NORMAL_TEXT' },
+            fields: 'namedStyleType',
+          },
+        });
+
         const preset = subList[0].ordered
           ? 'NUMBERED_DECIMAL_ALPHA_ROMAN'
           : 'BULLET_DISC_CIRCLE_SQUARE';
         requests.push({
           createParagraphBullets: {
             range: makeRange(subStart, subStart + raw.length, tabId),
-            bulletGlyphPreset: preset,
+            bulletPreset: preset,
           },
         });
 
-        // Inline formatting: track position including the leading \t chars.
+        // createParagraphBullets consumes the leading \t chars it uses to
+        // determine nesting depth — they are removed from the document text.
+        // Subtract them from the offset so subsequent blocks land correctly,
+        // and omit them from textPos so inline-style ranges are accurate.
+        const totalTabs = subList.reduce((sum, item) => sum + item.depth, 0);
+
+        // Inline formatting: positions are relative to post-consumption doc
+        // (no leading tabs), so track only text length + \n per item.
         let textPos = 0;
         for (const item of subList) {
-          textPos += item.depth; // skip \t prefix chars
           requests.push(
             ...inlineStyleRequests(item.spans, subStart + textPos, tabId),
           );
           textPos += spansText(item.spans).length + 1; // +1 for \n
         }
 
-        offset += raw.length;
+        offset += raw.length - totalTabs;
       }
     }
   }
