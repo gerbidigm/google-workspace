@@ -33,19 +33,14 @@ runs:
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
-        PRERELEASE_FLAG=""
+        ARGS=("${{ inputs.tag_name }}" --repo "${{ github.repository }}")
         if [ "${{ inputs.prerelease }}" = "true" ]; then
-          PRERELEASE_FLAG="--prerelease"
+          ARGS+=(--prerelease)
         fi
-        NAME_FLAG=""
         if [ -n "${{ inputs.name }}" ]; then
-          NAME_FLAG="--title ${{ inputs.name }}"
+          ARGS+=(--title "${{ inputs.name }}")
         fi
-        gh release create "${{ inputs.tag_name }}" \
-          --repo "${{ github.repository }}" \
-          $PRERELEASE_FLAG \
-          $NAME_FLAG \
-          2>/dev/null || true
+        gh release create "${ARGS[@]}" 2>/dev/null || true
 
     - name: Upload assets
       shell: bash

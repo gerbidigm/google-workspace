@@ -716,12 +716,8 @@ export async function registerGerbidigmTools(
         'inline **bold**, *italic*, ***bold italic***, and `code`. ' +
         'Use docs.getStructure to find the insertion index, or pass index="end" to append.',
       inputSchema: {
-        documentId: z
-          .string()
-          .describe('Google Doc ID or URL.'),
-        markdown: z
-          .string()
-          .describe('Markdown content to insert.'),
+        documentId: z.string().describe('Google Doc ID or URL.'),
+        markdown: z.string().describe('Markdown content to insert.'),
         index: z
           .union([z.coerce.number().int().min(1), z.literal('end')])
           .describe(

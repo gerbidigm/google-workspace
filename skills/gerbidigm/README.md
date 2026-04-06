@@ -99,22 +99,23 @@ Documents Gmail tools that are **not covered in the core Gmail skill** but are
 available in the upstream MCP server, plus gerbidigm convenience tools for
 common system-label operations:
 
-- `gmail.createLabel` - Create new labels (including nested, e.g. `Digested/2026-03-19`)
+- `gmail.createLabel` - Create new labels (including nested, e.g.
+  `Digested/2026-03-19`)
 - `gmail.batchModify` - Modify up to 1,000 messages in a single API call
 - `gmail.modifyThread` - Apply label changes to all messages in a thread at once
 - `gerbidigm.gmail.bulkMarkRead` - Remove UNREAD from 1–1000 messages
 - `gerbidigm.gmail.bulkMarkUnread` - Add UNREAD to 1–1000 messages
 - `gerbidigm.gmail.bulkToInbox` - Add INBOX to 1–1000 messages
 - `gerbidigm.gmail.bulkTrash` - Add TRASH, remove INBOX from 1–1000 messages
-- `gerbidigm.gmail.createLabelPath` - Create nested labels with `mkdir -p` semantics
+- `gerbidigm.gmail.createLabelPath` - Create nested labels with `mkdir -p`
+  semantics
 
 Covers the full daily-digest archival workflow pattern, the Gmail label model
 (label-based, not folder-based), and email management agent patterns for
 efficient bulk operations.
 
-**Use this skill when:** Creating labels on the fly, archiving or labeling
-many messages at once, or any workflow that would otherwise loop over
-`gmail.modify`.
+**Use this skill when:** Creating labels on the fly, archiving or labeling many
+messages at once, or any workflow that would otherwise loop over `gmail.modify`.
 
 ### `docs-editing.md`
 

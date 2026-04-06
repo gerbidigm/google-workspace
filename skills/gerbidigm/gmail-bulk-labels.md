@@ -1,9 +1,8 @@
 # Gmail Bulk Operations & Label Creation Skill
 
-This skill documents label creation and bulk message modification tools that
-are available in the upstream Gmail MCP server but not covered in the core
-Gmail skill, plus gerbidigm convenience tools that encode common intent
-directly.
+This skill documents label creation and bulk message modification tools that are
+available in the upstream Gmail MCP server but not covered in the core Gmail
+skill, plus gerbidigm convenience tools that encode common intent directly.
 
 ## Overview
 
@@ -20,8 +19,8 @@ These tools exist and work. Use them.
 
 > Gmail is label-based, not folder-based. Messages are not moved or copied —
 > they exist once and carry a set of labels simultaneously. "Archive" means
-> removing the INBOX label. "Trash" means adding TRASH and removing INBOX.
-> A message can technically carry both INBOX and TRASH labels; the convenience
+> removing the INBOX label. "Trash" means adding TRASH and removing INBOX. A
+> message can technically carry both INBOX and TRASH labels; the convenience
 > tools below apply the conventional combination so agents don't need to reason
 > about this.
 
@@ -34,18 +33,18 @@ yet.
 
 **Parameters:**
 
-| Parameter               | Required | Values                                          |
-| :---------------------- | :------- | :---------------------------------------------- |
+| Parameter               | Required | Values                                                      |
+| :---------------------- | :------- | :---------------------------------------------------------- |
 | `name`                  | Yes      | Label name. Use `/` for nesting, e.g. `Digested/2026-03-19` |
-| `labelListVisibility`   | No       | `labelShow` (default), `labelShowIfUnread`, `labelHide` |
-| `messageListVisibility` | No       | `show` (default), `hide`                        |
+| `labelListVisibility`   | No       | `labelShow` (default), `labelShowIfUnread`, `labelHide`     |
+| `messageListVisibility` | No       | `show` (default), `hide`                                    |
 
 **Typical workflow for dated/nested labels:**
 
 1. Call `gmail.listLabels()` to check if the label already exists
 2. If not found, call `gmail.createLabel` with the full nested name
-3. Use the returned label ID for subsequent `gmail.modify` /
-   `gmail.batchModify` calls
+3. Use the returned label ID for subsequent `gmail.modify` / `gmail.batchModify`
+   calls
 
 ```text
 gmail.createLabel({ name: "Digested/2026-03-19" })
@@ -67,11 +66,11 @@ over looping `gmail.modify` whenever you have more than one message to change.
 
 **Parameters:**
 
-| Parameter        | Required | Description                                      |
-| :--------------- | :------- | :----------------------------------------------- |
-| `messageIds`     | Yes      | Array of message ID strings (max 1,000)          |
-| `addLabelIds`    | No       | Label IDs to add (system or custom)              |
-| `removeLabelIds` | No       | Label IDs to remove (system or custom)           |
+| Parameter        | Required | Description                             |
+| :--------------- | :------- | :-------------------------------------- |
+| `messageIds`     | Yes      | Array of message ID strings (max 1,000) |
+| `addLabelIds`    | No       | Label IDs to add (system or custom)     |
+| `removeLabelIds` | No       | Label IDs to remove (system or custom)  |
 
 **Common patterns:**
 
@@ -109,8 +108,8 @@ Applies label changes to **every message in a thread** atomically. Use this
 instead of collecting individual message IDs when operating on a full
 conversation.
 
-**Parameters:** same shape as `gmail.batchModify` but takes a single
-`threadId` instead of `messageIds`.
+**Parameters:** same shape as `gmail.batchModify` but takes a single `threadId`
+instead of `messageIds`.
 
 ```text
 gmail.modifyThread({
@@ -163,21 +162,21 @@ gerbidigm.gmail.bulkTrash({ messageIds: ["id1", "id2", "id3"] })
 
 ### `gerbidigm.gmail.createLabelPath`
 
-Create a Gmail label path with `mkdir -p` semantics — all ancestors are
-created automatically if they don't exist, and existing segments are skipped.
-Returns the leaf label ID and a per-segment `created`/`skipped` report.
+Create a Gmail label path with `mkdir -p` semantics — all ancestors are created
+automatically if they don't exist, and existing segments are skipped. Returns
+the leaf label ID and a per-segment `created`/`skipped` report.
 
 **Use this instead of `gmail.createLabel` for any nested label creation.**
 Agents do not need to know the slash convention or pre-create parent labels.
 
 **Parameters:**
 
-| Parameter               | Required | Description                                    |
-| :---------------------- | :------- | :--------------------------------------------- |
-| `path`                  | Yes      | Full path, e.g. `"Digested/Digested-2026-03-19"` |
-| `delimiter`             | No       | Segment separator. Defaults to `"/"`           |
+| Parameter               | Required | Description                                             |
+| :---------------------- | :------- | :------------------------------------------------------ |
+| `path`                  | Yes      | Full path, e.g. `"Digested/Digested-2026-03-19"`        |
+| `delimiter`             | No       | Segment separator. Defaults to `"/"`                    |
 | `labelListVisibility`   | No       | `labelShow` (default), `labelShowIfUnread`, `labelHide` |
-| `messageListVisibility` | No       | `show` (default), `hide`                       |
+| `messageListVisibility` | No       | `show` (default), `hide`                                |
 
 ```text
 gerbidigm.gmail.createLabelPath({ path: "Digested/Digested-2026-03-19" })
@@ -197,18 +196,18 @@ silently, but you may want to confirm state before proceeding.
 
 ## When to Use Which Tool
 
-| Situation                         | Tool                              |
-| :-------------------------------- | :-------------------------------- |
-| One message                       | `gmail.modify`                    |
-| Multiple messages (> 1)           | `gmail.batchModify`               |
-| All messages in a thread          | `gmail.modifyThread`              |
-| Mark read (bulk)                  | `gerbidigm.gmail.bulkMarkRead`    |
-| Mark unread (bulk)                | `gerbidigm.gmail.bulkMarkUnread`  |
-| Move to inbox (bulk)              | `gerbidigm.gmail.bulkToInbox`     |
-| Trash messages (bulk)             | `gerbidigm.gmail.bulkTrash`       |
-| Create nested label (mkdir -p)    | `gerbidigm.gmail.createLabelPath` |
-| Create flat label                 | `gmail.createLabel`               |
-| Look up label ID by name          | `gmail.listLabels`                |
+| Situation                      | Tool                              |
+| :----------------------------- | :-------------------------------- |
+| One message                    | `gmail.modify`                    |
+| Multiple messages (> 1)        | `gmail.batchModify`               |
+| All messages in a thread       | `gmail.modifyThread`              |
+| Mark read (bulk)               | `gerbidigm.gmail.bulkMarkRead`    |
+| Mark unread (bulk)             | `gerbidigm.gmail.bulkMarkUnread`  |
+| Move to inbox (bulk)           | `gerbidigm.gmail.bulkToInbox`     |
+| Trash messages (bulk)          | `gerbidigm.gmail.bulkTrash`       |
+| Create nested label (mkdir -p) | `gerbidigm.gmail.createLabelPath` |
+| Create flat label              | `gmail.createLabel`               |
+| Look up label ID by name       | `gmail.listLabels`                |
 
 ## Email Management Agent Patterns
 
@@ -257,8 +256,8 @@ await Promise.all([
 
 ### Stay within the 1,000-message batch limit
 
-If a triage group exceeds 1,000 messages, split into chunks of 1,000 and call
-in sequence (or parallel if order doesn't matter):
+If a triage group exceeds 1,000 messages, split into chunks of 1,000 and call in
+sequence (or parallel if order doesn't matter):
 
 ```text
 for (let i = 0; i < ids.length; i += 1000) {
