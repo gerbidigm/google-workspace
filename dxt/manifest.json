@@ -9,7 +9,10 @@
     "name": "Gerbidigm",
     "url": "https://github.com/gerbidigm"
   },
-  "repository": "https://github.com/gerbidigm/google-workspace",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gerbidigm/google-workspace"
+  },
   "homepage": "https://github.com/gerbidigm/google-workspace",
   "license": "Apache-2.0",
   "keywords": [
@@ -32,15 +35,31 @@
       "command": "node",
       "args": ["${__dirname}/dist/index.js"],
       "env": {
+        "WORKSPACE_CLIENT_ID": "${user_config.google_client_id}",
+        "WORKSPACE_CLIENT_SECRET": "${user_config.google_client_secret}",
         "GEMINI_API_KEY": "${user_config.gemini_api_key}"
       }
     }
   },
   "user_config": {
+    "google_client_id": {
+      "type": "string",
+      "title": "Google OAuth Client ID",
+      "description": "Your Google Cloud OAuth 2.0 Client ID (Desktop App type). Required if you see 'This app is blocked' during sign-in. Create one at console.cloud.google.com → APIs & Services → Credentials.",
+      "required": false,
+      "sensitive": false
+    },
+    "google_client_secret": {
+      "type": "string",
+      "title": "Google OAuth Client Secret",
+      "description": "Your Google Cloud OAuth 2.0 Client Secret, paired with the Client ID above.",
+      "required": false,
+      "sensitive": true
+    },
     "gemini_api_key": {
       "type": "string",
       "title": "Gemini API Key",
-      "description": "Optional. Required only for the gerbidigm.gemini.describeImage and describeImageBatch tools. Leave blank if you do not need AI-powered image description.",
+      "description": "Optional. Required only for the gerbidigm.gemini.describeImage and describeImageBatch tools.",
       "required": false,
       "sensitive": true
     }
