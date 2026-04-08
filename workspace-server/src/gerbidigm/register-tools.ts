@@ -63,7 +63,7 @@ export async function registerGerbidigmTools(
   const exampleService = new ExampleCustomService(authManager);
   const flexibleGmailService = new FlexibleGmailService(authManager);
   const docsImageService = new DocsImageService(authManager);
-  const geminiService = new GeminiService();
+  const geminiService = new GeminiService(authManager);
   const driveUploadService = new DriveUploadService(authManager);
   const docsEditService = new DocsEditService(authManager);
   const gmailService = new GmailService(authManager);
