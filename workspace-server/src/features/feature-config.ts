@@ -33,8 +33,7 @@ export type ServiceName =
   | 'slides'
   | 'sheets'
   | 'time'
-  | 'tasks'
-  | 'gemini';
+  | 'tasks';
 
 export interface FeatureGroup {
   /** Service name (e.g., 'docs', 'gmail') */
@@ -272,18 +271,6 @@ export const FEATURE_GROUPS: readonly FeatureGroup[] = [
     defaultEnabled: false,
   },
 
-  // Gemini — allows OAuth-based access to the Generative Language API
-  // so users don't need a separate GEMINI_API_KEY.
-  {
-    service: 'gemini',
-    group: 'read',
-    scopes: scopes('generative-language'),
-    tools: [
-      'gerbidigm.gemini.describeImage',
-      'gerbidigm.gemini.describeImageBatch',
-    ],
-    defaultEnabled: true,
-  },
 ] as const satisfies readonly FeatureGroup[];
 
 /**
