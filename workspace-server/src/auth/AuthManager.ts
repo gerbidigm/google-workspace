@@ -379,8 +379,22 @@ export class AuthManager {
             .searchParams;
 
           // SECURITY: Validate the state parameter to prevent CSRF attacks.
+          // In direct-auth mode Google returns the full base64 JSON payload
+          // as state; extract the csrf field from it. In cloud-function mode
+          // the cloud function forwards just the raw CSRF token to localhost.
           const returnedState = qs.get('state');
-          if (returnedState !== csrfToken) {
+          let returnedCsrf: string | null = returnedState;
+          if (useDirectAuth && returnedState) {
+            try {
+              const decoded = JSON.parse(
+                Buffer.from(returnedState, 'base64').toString(),
+              ) as { csrf?: string };
+              returnedCsrf = decoded.csrf ?? returnedState;
+            } catch {
+              // Not JSON — compare as-is
+            }
+          }
+          if (returnedCsrf !== csrfToken) {
             res.end('State mismatch. Possible CSRF attack.');
             reject(new Error('OAuth state mismatch. Possible CSRF attack.'));
             return;
