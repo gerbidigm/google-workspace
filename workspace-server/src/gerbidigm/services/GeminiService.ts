@@ -5,12 +5,7 @@
  */
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import type { Auth } from 'googleapis';
-import type { AuthManager } from '../../auth/AuthManager';
 import { logToFile } from '../../utils/logger';
-
-const GENERATIVE_LANGUAGE_BASE =
-  'https://generativelanguage.googleapis.com/v1beta';
 
 interface ImageInput {
   url?: string;
@@ -34,129 +29,54 @@ interface BatchDescribeResult {
 
 /**
  * Service for Gemini API image analysis.
- *
- * Auth priority:
- *   1. GEMINI_API_KEY env var  →  uses @google/generative-ai SDK
- *   2. authManager (OAuth)     →  calls the Generative Language REST API
- *      directly using the user's access token (requires the
- *      `generative-language` OAuth scope).
+ * Requires GEMINI_API_KEY environment variable.
  */
 export class GeminiService {
   private genAI: GoogleGenerativeAI | null = null;
   private apiKey: string | null = null;
-  private authManager: AuthManager | null = null;
 
-  constructor(authManager?: AuthManager) {
+  constructor() {
     this.apiKey = process.env['GEMINI_API_KEY'] || null;
     if (this.apiKey) {
       this.genAI = new GoogleGenerativeAI(this.apiKey);
-    } else if (authManager) {
-      this.authManager = authManager;
     }
   }
 
   private checkInitialized(): void {
-    if (!this.genAI && !this.authManager) {
+    if (!this.genAI || !this.apiKey) {
       throw new Error(
-        'Gemini API not available. Either set the GEMINI_API_KEY environment ' +
-          'variable or ensure the generative-language OAuth scope was granted ' +
-          'during sign-in.',
+        'Gemini API not initialized. Set GEMINI_API_KEY environment variable.',
       );
     }
   }
-
-  // ── OAuth REST helpers ────────────────────────────────────────────────────
-
-  private async getAccessToken(): Promise<string> {
-    const client =
-      (await this.authManager!.getAuthenticatedClient()) as Auth.OAuth2Client;
-    const tokenResponse = await client.getAccessToken();
-    if (!tokenResponse.token) {
-      throw new Error('Failed to obtain OAuth access token for Gemini.');
-    }
-    return tokenResponse.token;
-  }
-
-  /**
-   * Call the Generative Language REST API with the user's OAuth token.
-   * Returns the first candidate's text.
-   */
-  private async generateContentOAuth(
-    model: string,
-    parts: unknown[],
-  ): Promise<string> {
-    const token = await this.getAccessToken();
-    const url = `${GENERATIVE_LANGUAGE_BASE}/models/${model}:generateContent`;
-
-    const body = {
-      contents: [{ parts }],
-    };
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(
-        `Generative Language API error ${response.status}: ${errorText}`,
-      );
-    }
-
-    const data = (await response.json()) as {
-      candidates?: Array<{
-        content?: { parts?: Array<{ text?: string }> };
-      }>;
-    };
-
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!text) {
-      throw new Error('No text in Generative Language API response.');
-    }
-    return text;
-  }
-
-  // ── Image loading ─────────────────────────────────────────────────────────
 
   private async urlToInlineData(
     url: string,
     mimeType?: string,
   ): Promise<{ inlineData: { data: string; mimeType: string } }> {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch image: ${response.statusText}`);
-    }
-    const arrayBuffer = await response.arrayBuffer();
-    const base64 = Buffer.from(arrayBuffer).toString('base64');
-    return {
-      inlineData: {
-        data: base64,
-        mimeType:
-          mimeType || response.headers.get('content-type') || 'image/jpeg',
-      },
-    };
-  }
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch image: ${response.statusText}`);
+      }
 
-  private async resolveImagePart(image: ImageInput) {
-    if (image.url) {
-      return this.urlToInlineData(image.url, image.mimeType);
-    } else if (image.base64) {
+      const arrayBuffer = await response.arrayBuffer();
+      const base64 = Buffer.from(arrayBuffer).toString('base64');
+      const inferredMimeType =
+        mimeType || response.headers.get('content-type') || 'image/jpeg';
+
       return {
         inlineData: {
-          data: image.base64,
-          mimeType: image.mimeType || 'image/jpeg',
+          data: base64,
+          mimeType: inferredMimeType,
         },
       };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to load image from URL: ${errorMessage}`);
     }
-    throw new Error('Either url or base64 must be provided');
   }
-
-  // ── Public tools ──────────────────────────────────────────────────────────
 
   /**
    * Describe a single image using Gemini.
@@ -174,20 +94,24 @@ export class GeminiService {
     try {
       this.checkInitialized();
 
-      const imagePart = await this.resolveImagePart(image);
-      let description: string;
+      const genModel = this.genAI!.getGenerativeModel({ model });
 
-      if (this.genAI) {
-        const result = await this.genAI
-          .getGenerativeModel({ model })
-          .generateContent([prompt, imagePart]);
-        description = result.response.text();
+      let imagePart;
+      if (image.url) {
+        imagePart = await this.urlToInlineData(image.url, image.mimeType);
+      } else if (image.base64) {
+        imagePart = {
+          inlineData: {
+            data: image.base64,
+            mimeType: image.mimeType || 'image/jpeg',
+          },
+        };
       } else {
-        description = await this.generateContentOAuth(model, [
-          { text: prompt },
-          imagePart,
-        ]);
+        throw new Error('Either url or base64 must be provided');
       }
+
+      const result = await genModel.generateContent([prompt, imagePart]);
+      const description = result.response.text();
 
       logToFile(
         `[GeminiService] Successfully described image (${description.length} chars)`,
@@ -243,9 +167,15 @@ export class GeminiService {
     try {
       this.checkInitialized();
 
-      if (images.length === 0) throw new Error('No images provided');
-      if (images.length > 50)
+      if (images.length === 0) {
+        throw new Error('No images provided');
+      }
+
+      if (images.length > 50) {
         throw new Error('Maximum 50 images per batch request');
+      }
+
+      const genModel = this.genAI!.getGenerativeModel({ model });
 
       let results: DescribeImageResult[];
 
@@ -253,27 +183,29 @@ export class GeminiService {
         results = await Promise.all(
           images.map(async (image, index) => {
             try {
-              const imagePart = await this.resolveImagePart(image);
+              const imagePart = image.url
+                ? await this.urlToInlineData(image.url, image.mimeType)
+                : {
+                    inlineData: {
+                      data: image.base64!,
+                      mimeType: image.mimeType || 'image/jpeg',
+                    },
+                  };
+
               const imagePrompt = sharedContext
                 ? `${sharedContext}\n\n${prompt}`
                 : prompt;
 
-              let description: string;
-              if (this.genAI) {
-                const result = await this.genAI
-                  .getGenerativeModel({ model })
-                  .generateContent([imagePrompt, imagePart]);
-                description = result.response.text();
-              } else {
-                description = await this.generateContentOAuth(model, [
-                  { text: imagePrompt },
-                  imagePart,
-                ]);
-              }
+              const result = await genModel.generateContent([
+                imagePrompt,
+                imagePart,
+              ]);
+              const description = result.response.text();
 
               logToFile(
                 `[GeminiService] Described image ${index + 1}/${images.length}`,
               );
+
               return { description, imageUrl: image.url, model };
             } catch (error) {
               const errorMessage =
@@ -291,27 +223,30 @@ export class GeminiService {
           }),
         );
       } else {
-        // All images in one request
         const imageParts = await Promise.all(
-          images.map((image) => this.resolveImagePart(image)),
+          images.map((image) =>
+            image.url
+              ? this.urlToInlineData(image.url, image.mimeType)
+              : {
+                  inlineData: {
+                    data: image.base64!,
+                    mimeType: image.mimeType || 'image/jpeg',
+                  },
+                },
+          ),
         );
 
-        const batchPrompt =
-          `${sharedContext ? sharedContext + '\n\n' : ''}${prompt}\n\n` +
-          `There are ${images.length} images. Number your descriptions (1, 2, 3, etc.).`;
-
-        let fullDescription: string;
-        if (this.genAI) {
-          const result = await this.genAI
-            .getGenerativeModel({ model })
-            .generateContent([batchPrompt, ...imageParts]);
-          fullDescription = result.response.text();
-        } else {
-          fullDescription = await this.generateContentOAuth(model, [
-            { text: batchPrompt },
-            ...imageParts,
-          ]);
+        const contentParts = [];
+        if (sharedContext) {
+          contentParts.push(sharedContext);
         }
+        contentParts.push(
+          `${prompt}\n\nThere are ${images.length} images. Number your descriptions (1, 2, 3, etc.).`,
+        );
+        contentParts.push(...imageParts);
+
+        const result = await genModel.generateContent(contentParts);
+        const fullDescription = result.response.text();
 
         const descriptions = fullDescription
           .split(/\n(?=\d+[.):]\s)/)
