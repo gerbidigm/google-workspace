@@ -47,4 +47,6 @@ module.exports = {
   coverageReporters: ['text', 'lcov', 'html'],
   testTimeout: 10000,
   verbose: true,
+  // Integration tests read from the system keychain which holds open handles.
+  forceExit: true,
 };
