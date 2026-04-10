@@ -254,5 +254,4 @@ export const FEATURE_GROUPS: readonly FeatureGroup[] = [
     tools: [],
     defaultEnabled: false,
   },
-
 ] as const satisfies readonly FeatureGroup[];

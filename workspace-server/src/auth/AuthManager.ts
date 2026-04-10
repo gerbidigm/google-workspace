@@ -14,6 +14,7 @@ import open from '../utils/open-wrapper';
 import { shouldLaunchBrowser } from '../utils/secure-browser-launcher';
 import { OAuthCredentialStorage } from './token-storage/oauth-credential-storage';
 import { loadConfig } from '../utils/config';
+import { oauthCallbackPage } from '../gerbidigm/oauth-callback-page';
 
 const config = loadConfig();
 const CLIENT_ID = config.clientId;
@@ -42,6 +43,7 @@ export class AuthManager {
   private client: Auth.OAuth2Client | null = null;
   private scopes: string[];
   private onStatusUpdate: ((message: string) => void) | null = null;
+  private clientNameGetter: (() => string | undefined) | null = null;
 
   constructor(scopes: string[]) {
     this.scopes = scopes;
@@ -49,6 +51,20 @@ export class AuthManager {
 
   public setOnStatusUpdate(callback: (message: string) => void) {
     this.onStatusUpdate = callback;
+  }
+
+  /**
+   * Provide a lazy getter for the MCP client name (e.g. "claude-desktop").
+   * Must be called after the MCP server is created so that getClientVersion()
+   * is available, but the getter itself is resolved at auth time (always after
+   * the initialize handshake has completed).
+   */
+  public setClientNameGetter(getter: () => string | undefined) {
+    this.clientNameGetter = getter;
+  }
+
+  private get isClaudeDesktop(): boolean {
+    return this.clientNameGetter?.() === 'claude-desktop';
   }
 
   private isTokenExpiringSoon(credentials: Auth.Credentials): boolean {
@@ -395,7 +411,13 @@ export class AuthManager {
             }
           }
           if (returnedCsrf !== csrfToken) {
-            res.end('State mismatch. Possible CSRF attack.');
+            const html = oauthCallbackPage({
+              success: false,
+              isClaudeDesktop: this.isClaudeDesktop,
+              errorMessage: 'State mismatch. Possible CSRF attack.',
+            });
+            res.writeHead(403, { 'Content-Type': 'text/html; charset=utf-8' });
+            res.end(html);
             reject(new Error('OAuth state mismatch. Possible CSRF attack.'));
             return;
           }
@@ -404,7 +426,13 @@ export class AuthManager {
             const errorCode = qs.get('error');
             const errorDescription =
               qs.get('error_description') || 'No additional details provided';
-            res.end();
+            const html = oauthCallbackPage({
+              success: false,
+              isClaudeDesktop: this.isClaudeDesktop,
+              errorMessage: `Google OAuth error: ${errorCode}. ${errorDescription}`,
+            });
+            res.writeHead(400, { 'Content-Type': 'text/html; charset=utf-8' });
+            res.end(html);
             reject(
               new Error(
                 `Google OAuth error: ${errorCode}. ${errorDescription}`,
@@ -425,7 +453,12 @@ export class AuthManager {
               redirect_uri: localRedirectUri,
             });
             client.setCredentials(tokens);
-            res.end('Authentication successful! Please return to the console.');
+            const html = oauthCallbackPage({
+              success: true,
+              isClaudeDesktop: this.isClaudeDesktop,
+            });
+            res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+            res.end(html);
             resolve();
           } else {
             // Cloud-function flow: the cloud function forwards tokens as query params.
@@ -444,9 +477,14 @@ export class AuthManager {
                 expiry_date: parseInt(expiry_date_str, 10),
               };
               client.setCredentials(tokens);
-              res.end(
-                'Authentication successful! Please return to the console.',
-              );
+              const html = oauthCallbackPage({
+                success: true,
+                isClaudeDesktop: this.isClaudeDesktop,
+              });
+              res.writeHead(200, {
+                'Content-Type': 'text/html; charset=utf-8',
+              });
+              res.end(html);
               resolve();
             } else {
               reject(
