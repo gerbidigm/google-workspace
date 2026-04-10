@@ -1,0 +1,13 @@
+diff --git a/workspace-server/src/index.ts b/workspace-server/src/index.ts
+index c6b2072..dfda02b 100644
+--- a/workspace-server/src/index.ts
++++ b/workspace-server/src/index.ts
+@@ -121,6 +121,8 @@ async function main() {
+     version,
+   });
+ 
++  authManager.setClientNameGetter(() => server.getClientVersion()?.name);
++
+   authManager.setOnStatusUpdate((message) => {
+     server
+       .sendLoggingMessage({

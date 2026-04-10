@@ -181,6 +181,8 @@ async function main() {
     version,
   });
 
+  authManager.setClientNameGetter(() => server.getClientVersion()?.name);
+
   authManager.setOnStatusUpdate((message) => {
     server
       .sendLoggingMessage({

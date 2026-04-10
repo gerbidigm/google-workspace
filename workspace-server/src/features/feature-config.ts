@@ -270,7 +270,6 @@ export const FEATURE_GROUPS: readonly FeatureGroup[] = [
     tools: ['tasks.create', 'tasks.update', 'tasks.complete', 'tasks.delete'],
     defaultEnabled: false,
   },
-
 ] as const satisfies readonly FeatureGroup[];
 
 /**
